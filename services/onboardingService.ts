@@ -7,162 +7,93 @@ interface OnboardingResponse {
   data?: any;
 }
 
-export const getCountries = async (limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
+const fetchData = async (url: string, token?: string): Promise<Response> => {
+  const headers: Record<string, string> = { 'Accept': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(url, { method: 'GET', headers });
+};
+
+const handleFetchResponse = async (response: Response, successMsg: string, failMsg: string): Promise<OnboardingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/country/all?limit=${limit}&offset=${offset}`, {
-      method: 'GET',
+    const data = await response.json();
+    if (response.ok) {
+      return { success: true, message: successMsg, data: data.result || data };
+    }
+    return { success: false, message: data.message || failMsg };
+  } catch (error) {
+    return { success: false, message: `Network error: ${error}` };
+  }
+};
+
+const uploadFile = async (url: string, fileUri: string, fileName: string, successMsg: string, failMsg: string): Promise<OnboardingResponse> => {
+  try {
+    const token = await getToken();
+    const formData = new FormData();
+    formData.append('file', { uri: fileUri, type: 'image/jpeg', name: fileName } as any);
+    
+    const response = await fetch(url, {
+      method: 'PUT',
       headers: {
+        'Content-Type': 'multipart/form-data',
         'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
+      body: formData,
     });
 
     const data = await response.json();
-
     if (response.ok) {
-      return {
-        success: true,
-        message: 'Countries fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch countries',
-      };
+      return { success: true, message: successMsg, data };
     }
+    return { success: false, message: data.message || failMsg };
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
+  }
+};
+
+export const getCountries = async (limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
+  try {
+    const response = await fetchData(`${API_BASE_URL}/country/all?limit=${limit}&offset=${offset}`);
+    return handleFetchResponse(response, 'Countries fetched successfully', 'Failed to fetch countries');
+  } catch (error) {
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const getCities = async (countryId: string, limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
   try {
-    const url = `${API_BASE_URL}/city/list/${countryId}?limit=${limit}&offset=${offset}&keyword=`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Cities fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch cities',
-      };
-    }
+    const response = await fetchData(`${API_BASE_URL}/city/list/${countryId}?limit=${limit}&offset=${offset}&keyword=`);
+    return handleFetchResponse(response, 'Cities fetched successfully', 'Failed to fetch cities');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const getGoals = async (limit: number = 10, offset: number = 0): Promise<OnboardingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/goal/all?limit=${limit}&offset=${offset}&status=ACTIVE`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Goals fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch goals',
-      };
-    }
+    const response = await fetchData(`${API_BASE_URL}/goal/all?limit=${limit}&offset=${offset}&status=ACTIVE`);
+    return handleFetchResponse(response, 'Goals fetched successfully', 'Failed to fetch goals');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const getTopics = async (limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/topic/all?limit=${limit}&offset=${offset}&status=ACTIVE`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Topics fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch topics',
-      };
-    }
+    const response = await fetchData(`${API_BASE_URL}/topic/all?limit=${limit}&offset=${offset}&status=ACTIVE`);
+    return handleFetchResponse(response, 'Topics fetched successfully', 'Failed to fetch topics');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const getSubjects = async (limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
-  const token=await getToken();
   try {
-    const response = await fetch(`${API_BASE_URL}/subjects/all?limit=${limit}&offset=${offset}&status=ACTIVE`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Subjects fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch subjects',
-      };
-    }
+    const token = await getToken();
+    const response = await fetchData(`${API_BASE_URL}/subjects/all?limit=${limit}&offset=${offset}&status=ACTIVE`, token);
+    return handleFetchResponse(response, 'Subjects fetched successfully', 'Failed to fetch subjects');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
@@ -212,153 +143,27 @@ export const updateUserDetails = async (userData: any): Promise<OnboardingRespon
 };
 
 export const uploadDocument = async (fileUri: string): Promise<OnboardingResponse> => {
-  try {
-    const token = await getToken();
-    
-    const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      type: 'image/jpeg',
-      name: 'document.jpg',
-    } as any);
-    
-    const url = `${API_BASE_URL}/tutor-details/document`;
-    
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Document uploaded successfully',
-        data: data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to upload document',
-      };
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
-  }
+  return uploadFile(`${API_BASE_URL}/tutor-details/document`, fileUri, 'document.jpg', 'Document uploaded successfully', 'Failed to upload document');
 };
 
 export const getQualifications = async (limit: number = 50, offset: number = 0): Promise<OnboardingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/qualification/all?limit=${limit}&offset=${offset}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Qualifications fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch qualifications',
-      };
-    }
+    const response = await fetchData(`${API_BASE_URL}/qualification/all?limit=${limit}&offset=${offset}`);
+    return handleFetchResponse(response, 'Qualifications fetched successfully', 'Failed to fetch qualifications');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const getLanguages = async (limit: number = 50, offset: number = 0): Promise<OnboardingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/languages/all?limit=${limit}&offset=${offset}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Languages fetched successfully',
-        data: data.result || data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to fetch languages',
-      };
-    }
+    const response = await fetchData(`${API_BASE_URL}/languages/all?limit=${limit}&offset=${offset}`);
+    return handleFetchResponse(response, 'Languages fetched successfully', 'Failed to fetch languages');
   } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
+    return { success: false, message: `Network error: ${error}` };
   }
 };
 
 export const uploadProfileImage = async (fileUri: string): Promise<OnboardingResponse> => {
-  try {
-    const token = await getToken();
-    
-    const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      type: 'image/jpeg',
-      name: 'profile.jpg',
-    } as any);
-    
-    const url = `${API_BASE_URL}/tutor-details/profileImage`;
-    
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: 'Profile image uploaded successfully',
-        data: data,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Failed to upload profile image',
-      };
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: `Network error: ${error}`,
-    };
-  }
+  return uploadFile(`${API_BASE_URL}/tutor-details/profileImage`, fileUri, 'profile.jpg', 'Profile image uploaded successfully', 'Failed to upload profile image');
 };
