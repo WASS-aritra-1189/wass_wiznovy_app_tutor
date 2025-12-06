@@ -22,6 +22,18 @@ const BookingCard: React.FC<BookingCardProps> = ({
   price,
   onPress 
 }) => {
+  const getStatusBadgeStyle = () => {
+    if (status === 'Ended') return styles.endedBadge;
+    if (status === 'Ongoing') return styles.ongoingBadge;
+    return styles.nextBadge;
+  };
+
+  const getStatusTextStyle = () => {
+    if (status === 'Ended') return styles.endedText;
+    if (status === 'Ongoing') return styles.ongoingText;
+    return styles.nextText;
+  };
+
   return (
     <TouchableOpacity style={styles.bookingCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.leftSection}>
@@ -56,16 +68,8 @@ const BookingCard: React.FC<BookingCardProps> = ({
       <View style={styles.rightSection}>
         <View style={styles.topRightSection}>
           {status && (
-            <View style={[
-              styles.statusBadge,
-              status === 'Ended' ? styles.endedBadge : 
-              status === 'Ongoing' ? styles.ongoingBadge : styles.nextBadge
-            ]}>
-              <Text style={[
-                styles.statusText,
-                status === 'Ended' ? styles.endedText : 
-                status === 'Ongoing' ? styles.ongoingText : styles.nextText
-              ]}>
+            <View style={[styles.statusBadge, getStatusBadgeStyle()]}>
+              <Text style={[styles.statusText, getStatusTextStyle()]}>
                 {status}
               </Text>
             </View>

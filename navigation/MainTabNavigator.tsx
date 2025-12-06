@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens
 import HomePage from '../pages/HomePage';
-import SearchPage from '../pages/SearchPage';
+
 import ProfilePage from '../pages/ProfilePage';
 import PaymentPage from '../pages/PaymentPage';
 import WithdrawPage from '../pages/WithdrawPage';
@@ -18,7 +18,6 @@ import UpdateCoursePage from '../pages/UpdateCoursePage';
 import GeneralPolicyScreen from '../pages/generalPolicy';
 import PolicyDetailPage from '../components/PolicyDetailPage';
 import NotificationPage from '../pages/NotificationPage';
-import MyCourse from '../pages/MyCourse';
 import CourseDetailsPage from '../pages/CourseDetailsPage';
 import VideoDetailsPage from '../pages/VideoDetailsPage';
 import CourseVideoPage from '../pages/CourseVideoPage';

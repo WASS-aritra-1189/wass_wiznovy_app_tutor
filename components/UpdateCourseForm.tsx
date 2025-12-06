@@ -47,7 +47,7 @@ const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, c
   const [validityDays, setValidityDays] = useState('');
   const [authorMessage, setAuthorMessage] = useState('');
   const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  const [thumbnail, setThumbnail] = useState(null);
+  
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -69,7 +69,8 @@ const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, c
       setAuthorMessage(course.authorMessage || '');
       
       // Extract duration number from string like "70 min" or "40 hours"
-      const durationMatch = course.totalDuration?.match(/(\d+)/);
+      const durationRegex = /(\d+)/;
+      const durationMatch = course.totalDuration ? durationRegex.exec(course.totalDuration) : null;
       setDuration(durationMatch ? durationMatch[1] : '');
       
       // Format dates for input fields
@@ -107,10 +108,10 @@ const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, c
       description,
       price: price,
       discountPrice: discountedPrice || undefined,
-      validityDays: parseInt(validityDays) || 365,
+      validityDays: Number.parseInt(validityDays) || 365,
       accessType,
       totalDuration: `${duration} hours`,
-      totalLectures: parseInt(totalLectures) || 1,
+      totalLectures: Number.parseInt(totalLectures) || 1,
       authorMessage: authorMessage || 'Welcome to this course',
       startDate: new Date(startDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
       endDate: new Date(endDate).toISOString().split('T')[0], // Format as YYYY-MM-DD

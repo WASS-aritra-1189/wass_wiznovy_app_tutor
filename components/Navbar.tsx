@@ -25,11 +25,11 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ userGender = 'Male', userName = 'User', navigation: navProp, onMenuToggle }) => {
   const defaultNavigation = useNavigation<DrawerNavigationProp<any>>();
-  const navigation = navProp || defaultNavigation;
+  const navigation = navProp ?? defaultNavigation;
   const [menuVisible, setMenuVisible] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const menuSlideAnim = useState(new Animated.Value(-320))[0];
-  const { profile, loading } = useSelector((state: RootState) => state.profile);
+  const [menuSlideAnim] = useState(() => new Animated.Value(-320));
+  const { profile } = useSelector((state: RootState) => state.profile);
   const dispatch = useDispatch<AppDispatch>();
   
   React.useEffect(() => {

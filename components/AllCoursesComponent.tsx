@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
@@ -34,36 +34,6 @@ const AllCoursesComponent: React.FC<AllCoursesComponentProps> = ({
   useEffect(() => {
     dispatch(fetchMyCourses());
   }, [dispatch]);
-  const getStatus = (startDate: string, endDate: string): string => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    if (today < start) return 'Next';
-    if (today > end) return 'Ended';
-    return 'Ongoing';
-  };
-  
-  const formatDateRange = (startDate: string, endDate: string): string => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const today = new Date();
-    
-    const formatDate = (date: Date) => {
-      const month = date.toLocaleDateString('en-US', { month: 'short' });
-      const day = date.getDate();
-      return `${month} ${day}`;
-    };
-    
-    if (start.toDateString() === today.toDateString()) {
-      return `Today - ${formatDate(end)}`;
-    } else if (end.toDateString() === today.toDateString()) {
-      return `${formatDate(start)} - Today`;
-    } else {
-      return `${formatDate(start)} - ${formatDate(end)}`;
-    }
-  };
- 
 
   const apiCourses = courses.map(course => ({
     id: course.id || '',

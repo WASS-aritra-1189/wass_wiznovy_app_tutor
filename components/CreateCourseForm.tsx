@@ -19,7 +19,6 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
   const { loading, error } = useSelector((state: RootState) => state.course);
   
   const [courseName, setCourseName] = useState('');
-  const [subject, setSubject] = useState('');
   const [duration, setDuration] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -30,7 +29,6 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
   const [validityDays, setValidityDays] = useState('');
   const [authorMessage, setAuthorMessage] = useState('');
   const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  const [thumbnail, setThumbnail] = useState(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -53,10 +51,10 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
       description,
       price: price,
       discountPrice: discountedPrice || undefined,
-      validityDays: parseInt(validityDays) || 365,
+      validityDays: Number.parseInt(validityDays) || 365,
       accessType,
       totalDuration: `${duration} hours`,
-      totalLectures: parseInt(totalLectures) || 1,
+      totalLectures: Number.parseInt(totalLectures) || 1,
       authorMessage: authorMessage || 'Welcome to this course',
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
@@ -95,7 +93,6 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
   const resetForm = () => {
     console.log('🧹 CreateCourseForm: Resetting form');
     setCourseName('');
-    setSubject('');
     setDuration('');
     setStartDate('');
     setEndDate('');
@@ -106,12 +103,11 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
     setValidityDays('');
     setAuthorMessage('');
     setAccessType('PAID');
-    setThumbnail(null);
   };
 
   const handleThumbnailUpload = () => {
     console.log('📸 CreateCourseForm: Thumbnail upload pressed');
-    // TODO: Implement image picker functionality
+
   };
 
   const onStartDateChange = (event: any, selectedDate?: Date) => {

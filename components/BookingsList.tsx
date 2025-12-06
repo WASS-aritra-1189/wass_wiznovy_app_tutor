@@ -36,12 +36,12 @@ const BookingsList: React.FC = () => {
     // Parse start time (format: "09:15:00")
     const [startHours, startMinutes] = startTime.split(':');
     const classStartTime = new Date(classDate);
-    classStartTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+    classStartTime.setHours(Number.parseInt(startHours), Number.parseInt(startMinutes), 0, 0);
     
     // Parse end time (format: "10:15:00")
     const [endHours, endMinutes] = endTime.split(':');
     const classEndTime = new Date(classDate);
-    classEndTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+    classEndTime.setHours(Number.parseInt(endHours), Number.parseInt(endMinutes), 0, 0);
     
     if (now > classEndTime) {
       return 'Ended';
@@ -54,7 +54,7 @@ const BookingsList: React.FC = () => {
 
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
+    const hour = Number.parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;

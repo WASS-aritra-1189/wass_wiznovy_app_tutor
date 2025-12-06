@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Image, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import * as ImagePicker from 'expo-image-picker';
-import AlertComponent from './AlertComponent';
+
 import TimePickerModal from './TimePickerModal';
 import SuccessPopup from './SuccessPopup';
 import ErrorPopup from './ErrorPopup';
@@ -67,8 +67,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [selectedDayAvailability, setSelectedDayAvailability] = useState<any[]>([]);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
-  const [showEditAvailabilityModal, setShowEditAvailabilityModal] = useState(false);
-  const [editingAvailabilityDay, setEditingAvailabilityDay] = useState<string>('');
+  
   const [editingAvailabilityId, setEditingAvailabilityId] = useState<string | null>(null);
   
   const { subjects, countries, cities, languages, savedAvailability } = useSelector((state: RootState) => state.onboarding);
@@ -176,6 +175,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
           setTimeout(() => setShowErrorPopup(false), 3000);
         }
       } catch (error) {
+        console.error('Image upload error:', error);
         setErrorMessage('Failed to upload image. Please try again.');
         setShowErrorPopup(true);
         setTimeout(() => setShowErrorPopup(false), 3000);
@@ -497,6 +497,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
         setTimeout(() => setShowErrorPopup(false), 3000);
       }
     } catch (error) {
+      console.error('Profile update error:', error);
       setErrorMessage('Failed to update profile. Please try again.');
       setShowErrorPopup(true);
       setTimeout(() => setShowErrorPopup(false), 3000);
@@ -545,7 +546,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
           placeholder="Name" 
           value={name}
           onChangeText={(text) => {
-            const filteredText = text.replace(/[^a-zA-Z\s]/g, '');
+            const filteredText = text.replaceAll(/[^a-zA-Z\s]/g, '');
             setName(filteredText);
           }}
         />
@@ -793,7 +794,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
           placeholder="Tell us about yourself..."
           value={aboutMe}
           onChangeText={(text) => {
-            const filteredText = text.replace(/[^a-zA-Z0-9\s]/g, '');
+            const filteredText = text.replaceAll(/[^a-zA-Z0-9\s]/g, '');
             setAboutMe(filteredText);
           }}
           multiline
@@ -860,20 +861,22 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Saved Availability</Text>
             <ScrollView style={styles.availabilityList}>
-              {loadingAvailability ? (
-                <Text style={styles.noAvailabilityText}>Loading...</Text>
-              ) : selectedDayAvailability.length > 0 ? (
-                selectedDayAvailability.map((item) => (
-                  <View key={item.id || `${item.startTime}-${item.endTime}`} style={styles.availabilityItem}>
-                    <Text style={styles.availabilityText}>
-                      {item.startTime} - {item.endTime}
-                    </Text>
-                    <Text style={styles.availabilityStatus}>{item.status}</Text>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noAvailabilityText}>No availability found</Text>
-              )}
+              {(() => {
+                if (loadingAvailability) {
+                  return <Text style={styles.noAvailabilityText}>Loading...</Text>;
+                }
+                if (selectedDayAvailability.length > 0) {
+                  return selectedDayAvailability.map((item) => (
+                    <View key={item.id || `${item.startTime}-${item.endTime}`} style={styles.availabilityItem}>
+                      <Text style={styles.availabilityText}>
+                        {item.startTime} - {item.endTime}
+                      </Text>
+                      <Text style={styles.availabilityStatus}>{item.status}</Text>
+                    </View>
+                  ));
+                }
+                return <Text style={styles.noAvailabilityText}>No availability found</Text>;
+              })()}
             </ScrollView>
             <TouchableOpacity 
               style={styles.closeButton}

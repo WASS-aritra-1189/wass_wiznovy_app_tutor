@@ -3,14 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Modal,
-  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
-import Button from './Button';
+
 import InfoCard from './InfoCard';
 
 interface DashboardModalProps {
@@ -52,9 +51,7 @@ const DashboardModal: React.FC<DashboardModalProps> = ({
           <InfoCard
             image={require('../assets/gotodashboard.png')}
             title="Thanks for the Information"
-            description="Read the terms carefully before accepting. Check permissions the app requests."
-            buttonTitle="Go to Dashboard"
-            onButtonPress={onGoToDashboard}
+            subtitle="Read the terms carefully before accepting. Check permissions the app requests."
           />
         </View>
       </SafeAreaView>

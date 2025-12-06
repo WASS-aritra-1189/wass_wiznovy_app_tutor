@@ -22,9 +22,9 @@ const Availability: React.FC<AvailabilityProps> = ({ onDayPress, onTimePress }) 
         style={styles.daysScrollView}
         contentContainerStyle={styles.daysContainer}
       >
-        {days.map((day, index) => (
+        {days.map((day) => (
           <TouchableOpacity
-            key={index}
+            key={day}
             style={[styles.dayButton, selectedDay === day && styles.selectedButton]}
             onPress={() => {
               setSelectedDay(day);
@@ -39,9 +39,9 @@ const Availability: React.FC<AvailabilityProps> = ({ onDayPress, onTimePress }) 
       {/* Time Buttons - 4 in a row, 2 rows */}
       <View style={styles.timeContainer}>
         <View style={styles.timeRow}>
-          {times.slice(0, 4).map((time, index) => (
+          {times.slice(0, 4).map((time) => (
             <TouchableOpacity
-              key={index}
+              key={time}
               style={[styles.timeButton, selectedTime === time && styles.selectedButton]}
               onPress={() => {
                 setSelectedTime(time);
@@ -53,9 +53,9 @@ const Availability: React.FC<AvailabilityProps> = ({ onDayPress, onTimePress }) 
           ))}
         </View>
         <View style={styles.timeRow}>
-          {times.slice(4, 8).map((time, index) => (
+          {times.slice(4, 8).map((time) => (
             <TouchableOpacity
-              key={index + 4}
+              key={time}
               style={[styles.timeButton, selectedTime === time && styles.selectedButton]}
               onPress={() => {
                 setSelectedTime(time);

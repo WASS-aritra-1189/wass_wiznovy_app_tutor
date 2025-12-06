@@ -6,7 +6,7 @@ import {
   Modal,
   TouchableOpacity,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 
 interface GoogleLoginTermsPopupProps {
   visible: boolean;
@@ -16,6 +16,12 @@ interface GoogleLoginTermsPopupProps {
 }
 
 const GoogleLoginTermsPopup: React.FC<GoogleLoginTermsPopupProps> = ({ visible, onContinue, provider = 'google', action = 'signin' }) => {
+  const getTitle = () => {
+    const providerName = provider === 'google' ? 'GOOGLE' : 'APPLE';
+    const actionText = action === 'signin' ? 'SIGN IN' : 'SIGN UP';
+    return `${actionText} WITH ${providerName}`;
+  };
+
   return (
     <Modal
       visible={visible}
@@ -28,10 +34,7 @@ const GoogleLoginTermsPopup: React.FC<GoogleLoginTermsPopupProps> = ({ visible, 
           
           {/* Header */}
           <Text style={styles.modalTitle}>
-            {action === 'signin' 
-              ? (provider === 'google' ? 'SIGN IN WITH GOOGLE' : 'SIGN IN WITH APPLE')
-              : (provider === 'google' ? 'SIGN UP WITH GOOGLE' : 'SIGN UP WITH APPLE')
-            }
+            {getTitle()}
           </Text>
           
           {/* Content */}

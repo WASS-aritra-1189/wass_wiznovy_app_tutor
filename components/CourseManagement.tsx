@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
-import { fetchMyCourses, createCourse, updateCourse } from '../store/courseSlice';
+import { fetchMyCourses} from '../store/courseSlice';
 import CreateCourseForm from './CreateCourseForm';
 import UpdateCourseForm from './UpdateCourseForm';
 
@@ -83,6 +83,46 @@ const CourseManagement: React.FC = () => {
     </View>
   );
 
+  const renderContent = () => {
+    if (loading.fetch) {
+      return (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading courses...</Text>
+        </View>
+      );
+    }
+    
+    if (error) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => dispatch(fetchMyCourses())}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    return (
+      <FlatList
+        data={courses}
+        renderItem={renderCourseItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.coursesList}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No courses found</Text>
+            <Text style={styles.emptySubtext}>Create your first course to get started</Text>
+          </View>
+        }
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -93,35 +133,7 @@ const CourseManagement: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {loading.fetch ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading courses...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => dispatch(fetchMyCourses())}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={courses}
-          renderItem={renderCourseItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.coursesList}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No courses found</Text>
-              <Text style={styles.emptySubtext}>Create your first course to get started</Text>
-            </View>
-          }
-        />
-      )}
+      {renderContent()}
 
       <CreateCourseForm
         visible={showCreateForm}
