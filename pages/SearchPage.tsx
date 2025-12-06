@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TextInput,
   TouchableOpacity,
@@ -11,14 +10,14 @@ import {
   Image,
   Animated,
 } from 'react-native';
-import Navbar from '../components/Navbar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TopSubjects from '../components/TopSubjects';
 import TutorRecommendation from '../components/TutorRecommendation';
 import AiChatBanner from '../components/AiChatBanner';
 import PopularCourses from '../components/PopularCourses';
 import Categories from '../components/Categories';
 import FilterMenu from '../components/FilterMenu';
-import SafeAreaWrapper from '../components/SafeAreaWrapper';
+
 
 interface SearchPageProps {
   onBack: () => void;
@@ -32,7 +31,7 @@ const SearchPage: React.FC<SearchPageProps> = ({ onBack, userGender = 'Male', us
   const [isSearching, setIsSearching] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
-  const filterSlideAnim = useState(new Animated.Value(320))[0];
+  const [filterSlideAnim] = useState(new Animated.Value(320));
 
   const handleSearch = (text: string) => {
     setSearchText(text);
@@ -103,6 +102,42 @@ const SearchPage: React.FC<SearchPageProps> = ({ onBack, userGender = 'Male', us
     });
   };
 
+  const renderContent = () => {
+    if (isRecording) {
+      return (
+        <View style={styles.recordingContainer}>
+          <Text style={styles.recordingText}>🎤 Listening...</Text>
+          <Text style={styles.recordingSubtext}>Speak now</Text>
+        </View>
+      );
+    }
+    if (isSearching && searchText.length > 0) {
+      return (
+        <View style={styles.searchResultsContainer}>
+          <Text style={styles.searchResultsTitle}>Search Results ({searchResults.length})</Text>
+          {searchResults.length > 0 ? (
+            searchResults.map((result) => (
+              <TouchableOpacity key={result} style={styles.searchResultItem}>
+                <Text style={styles.searchResultText}>{result}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={styles.noResultsText}>No results found for "{searchText}"</Text>
+          )}
+        </View>
+      );
+    }
+    return (
+      <>
+        <TopSubjects />
+        <TutorRecommendation />
+        <AiChatBanner />
+        <PopularCourses />
+        <Categories />
+      </>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -147,33 +182,7 @@ const SearchPage: React.FC<SearchPageProps> = ({ onBack, userGender = 'Male', us
 
       {/* Main Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {isRecording ? (
-          <View style={styles.recordingContainer}>
-            <Text style={styles.recordingText}>🎤 Listening...</Text>
-            <Text style={styles.recordingSubtext}>Speak now</Text>
-          </View>
-        ) : isSearching && searchText.length > 0 ? (
-          <View style={styles.searchResultsContainer}>
-            <Text style={styles.searchResultsTitle}>Search Results ({searchResults.length})</Text>
-            {searchResults.length > 0 ? (
-              searchResults.map((result, index) => (
-                <TouchableOpacity key={index} style={styles.searchResultItem}>
-                  <Text style={styles.searchResultText}>{result}</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noResultsText}>No results found for "{searchText}"</Text>
-            )}
-          </View>
-        ) : (
-          <>
-            <TopSubjects />
-            <TutorRecommendation />
-            <AiChatBanner />
-            <PopularCourses />
-            <Categories />
-          </>
-        )}
+        {renderContent()}
         <View style={styles.spacer} />
       </ScrollView>
       

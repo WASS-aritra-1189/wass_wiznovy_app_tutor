@@ -3,17 +3,17 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Image } from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import GoogleLoginTermsPopup from '../components/GoogleLoginTermsPopup';
@@ -21,7 +21,7 @@ import TermsConditionsPopup from '../components/TermsConditionsPopup';
 import SafeAreaWrapper from '../components/SafeAreaWrapper';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
-import { useNavigationContext } from '../navigation/NavigationContext';
+
 import { registerUser } from '../services/authService';
 import { storeToken } from '../services/storage';
 
@@ -41,13 +41,12 @@ const validatePassword = (password: string) => {
 };
 
 const validatePhone = (phone: string) => {
-  const phoneRegex = /^[0-9]{10,}$/;
-  return phoneRegex.test(phone.replace(/[^0-9]/g, ''));
+  const phoneRegex = /^\d{10,}$/;
+  return phoneRegex.test(phone.replaceAll(/\D/g, ''));
 };
 
 const SignUpScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { onAuthSuccess } = useNavigationContext();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -65,7 +64,7 @@ const SignUpScreen: React.FC = () => {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSignUp = async () => {
+  const validateForm = () => {
     const newErrors: {name?: string; phone?: string; email?: string; password?: string; confirmPassword?: string; terms?: string} = {};
     
     if (!name.trim()) {
@@ -102,6 +101,11 @@ const SignUpScreen: React.FC = () => {
       newErrors.terms = 'Please accept terms and conditions';
     }
     
+    return newErrors;
+  };
+
+  const handleSignUp = async () => {
+    const newErrors = validateForm();
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
@@ -113,8 +117,8 @@ const SignUpScreen: React.FC = () => {
           email,
           password,
         });
-        
-        if (result.success) {
+         
+      if (result.success) {
           if (result.data?.token) {
             await storeToken(result.data.token);
           }
@@ -124,6 +128,7 @@ const SignUpScreen: React.FC = () => {
           setShowErrorPopup(true);
         }
       } catch (error) {
+        console.error('Sign up error:', error);
         setErrorMessage('Something went wrong. Please try again.');
         setShowErrorPopup(true);
       } finally {
@@ -138,7 +143,7 @@ const SignUpScreen: React.FC = () => {
 
   const handleGoogleTermsContinue = () => {
     setShowGoogleTermsPopup(false);
-    onGoogleSignUp?.();
+    console.log('Google sign up accepted');
   };
 
   const handleAppleSignUp = () => {
@@ -147,7 +152,7 @@ const SignUpScreen: React.FC = () => {
 
   const handleAppleTermsContinue = () => {
     setShowAppleTermsPopup(false);
-    onAppleSignUp?.();
+    console.log('Apple sign up accepted');
   };
 
   const handleTermsAccept = () => {
@@ -204,7 +209,7 @@ const SignUpScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={name}
                 onChangeText={(text) => {
-                  const filteredText = text.replace(/[^a-zA-Z\s]/g, '');
+                  const filteredText = text.replaceAll(/[^a-zA-Z\s]/g, '');
                   setName(filteredText);
                   if (errors.name) {
                     setErrors(prev => ({...prev, name: undefined}));
@@ -226,7 +231,7 @@ const SignUpScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={phone}
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, '');
+                  const numericText = text.replaceAll(/\D/g, '');
                   if (numericText.length <= 10) {
                     setPhone(numericText);
                     if (errors.phone) {
@@ -252,7 +257,7 @@ const SignUpScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={(text) => {
-                  const filteredText = text.replace(/[^a-zA-Z0-9@.]/g, '');
+                  const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
                   if (errors.email) {
                     setErrors(prev => ({...prev, email: undefined}));
@@ -426,7 +431,7 @@ const SignUpScreen: React.FC = () => {
         message="Registration successful! Please verify your email."
         onClose={() => {
           setShowSuccessPopup(false);
-          navigation.navigate('OtpVerification' as never, { email, type: 'registration' } as never);
+          (navigation as any).navigate('OtpVerification', { email, type: 'registration' });
         }}
       />
       

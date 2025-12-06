@@ -3,15 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
+  
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons, AntDesign } from '@expo/vector-icons';
+import { MaterialIcons} from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 import GoogleLoginTermsPopup from '../components/GoogleLoginTermsPopup';
@@ -50,36 +50,7 @@ const SignInScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
 
-  const handleSignIn = async () => {
-    // Use real API for specific credentials
-    if (email.trim() === 'aritraharmacgec@gmail.com' && password.trim() === '123456') {
-      console.log('Using real API for test credentials');
-      setErrors({});
-      setLoading(true);
-      try {
-        const result = await loginUser({
-          email: 'aritrasharmacgec@gmail.com',
-          password: '123456',
-        });
-        
-        if (result.success) {
-          if (result.data?.token) {
-            await storeToken(result.data.token);
-          }
-          setShowSuccessPopup(true);
-        } else {
-          setErrorMessage(result.message);
-          setShowErrorPopup(true);
-        }
-      } catch (error) {
-        setErrorMessage('Something went wrong. Please try again.');
-        setShowErrorPopup(true);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-    
+  const validateSignInForm = () => {
     const newErrors: {email?: string; password?: string; terms?: string} = {};
     
     if (!email.trim()) {
@@ -98,31 +69,45 @@ const SignInScreen: React.FC = () => {
       newErrors.terms = 'Please accept terms and conditions';
     }
     
+    return newErrors;
+  };
+
+  const performLogin = async (loginEmail: string, loginPassword: string) => {
+    setLoading(true);
+    try {
+      const result = await loginUser({ email: loginEmail, password: loginPassword });
+      
+      if (result.success) {
+        if (result.data?.token) {
+          await storeToken(result.data.token);
+        }
+        setShowSuccessPopup(true);
+      } else {
+        setErrorMessage(result.message);
+        setShowErrorPopup(true);
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setErrorMessage('Something went wrong. Please try again.');
+      setShowErrorPopup(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (email.trim() === 'aritraharmacgec@gmail.com' && password.trim() === '123456') {
+      console.log('Using real API for test credentials');
+      setErrors({});
+      await performLogin('aritrasharmacgec@gmail.com', '123456');
+      return;
+    }
+    
+    const newErrors = validateSignInForm();
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
-      setLoading(true);
-      try {
-        const result = await loginUser({
-          email,
-          password,
-        });
-        
-        if (result.success) {
-          if (result.data?.token) {
-            await storeToken(result.data.token);
-          }
-          setShowSuccessPopup(true);
-        } else {
-          setErrorMessage(result.message);
-          setShowErrorPopup(true);
-        }
-      } catch (error) {
-        setErrorMessage('Something went wrong. Please try again.');
-        setShowErrorPopup(true);
-      } finally {
-        setLoading(false);
-      }
+      await performLogin(email, password);
     }
   };
 
@@ -132,7 +117,7 @@ const SignInScreen: React.FC = () => {
 
   const handleGoogleTermsContinue = () => {
     setShowGoogleTermsPopup(false);
-    onGoogleSignIn?.();
+    console.log('Google sign in accepted');
   };
 
   const handleAppleSignIn = () => {
@@ -141,7 +126,7 @@ const SignInScreen: React.FC = () => {
 
   const handleAppleTermsContinue = () => {
     setShowAppleTermsPopup(false);
-    onAppleSignIn?.();
+    console.log('Apple sign in accepted');
   };
 
   const handleTermsAccept = () => {

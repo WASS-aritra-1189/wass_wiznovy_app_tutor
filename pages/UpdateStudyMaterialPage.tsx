@@ -6,12 +6,12 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ScrollView, 
-  SafeAreaView, 
   StatusBar, 
   Alert, 
   Image, 
   ActivityIndicator 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -44,6 +44,7 @@ const UpdateStudyMaterialPage: React.FC = () => {
         Alert.alert('Error', result.message);
       }
     } catch (error) {
+      console.error('Failed to load material data:', error);
       Alert.alert('Error', 'Failed to load material data');
     } finally {
       setIsLoadingData(false);
@@ -82,6 +83,7 @@ const UpdateStudyMaterialPage: React.FC = () => {
         Alert.alert('Error', result.message);
       }
     } catch (error) {
+      console.error('Failed to update study material:', error);
       Alert.alert('Error', 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -99,6 +101,7 @@ const UpdateStudyMaterialPage: React.FC = () => {
         setSelectedFile(result.assets[0]);
       }
     } catch (error) {
+      console.error('Failed to pick document:', error);
       Alert.alert('Error', 'Failed to pick document');
     }
   };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, SafeAreaView, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -40,7 +41,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
   const [validityDays, setValidityDays] = useState('');
   const [authorMessage, setAuthorMessage] = useState('');
   const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  const [thumbnail, setThumbnail] = useState(null);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -64,50 +65,48 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     dispatch(fetchLanguages());
   }, [dispatch, courseId]);
 
+  const populateBasicFields = (course: any) => {
+    setCourseName(course.name || '');
+    setDescription(course.description || '');
+    setPrice(course.price?.toString() || '');
+    setDiscountedPrice(course.discountPrice?.toString() || '');
+    setValidityDays(course.validityDays?.toString() || '');
+    setAccessType(course.accessType || 'PAID');
+    setTotalLectures(course.totalLectures?.toString() || '');
+    setAuthorMessage(course.authorMessage || '');
+    setSubjectId(course.subjectId || '');
+    setLanguageId(course.languageId || '');
+    const durationMatch = course.totalDuration?.match(/(\d+)/);
+    setDuration(durationMatch ? durationMatch[1] : '');
+  };
+
+  const populateDates = (course: any) => {
+    if (course.startDate) {
+      setStartDate(new Date(course.startDate).toISOString().split('T')[0]);
+    }
+    if (course.endDate) {
+      setEndDate(new Date(course.endDate).toISOString().split('T')[0]);
+    }
+  };
+
+  const populateSubjectAndLanguage = (course: any) => {
+    const foundSubject = subjects.find(s => s.id === course.subjectId);
+    if (foundSubject) setSubject(foundSubject.name);
+    const foundLanguage = languages.find(l => l.id === course.languageId);
+    if (foundLanguage) setLanguage(foundLanguage.name);
+  };
+
   // Populate form when course data is loaded
   useEffect(() => {
-    if (currentCourse) {
-      console.log('📝 UpdateCoursePage: Populating form with course data:', currentCourse);
-      setCourseName(currentCourse.name || '');
-      setDescription(currentCourse.description || '');
-      setPrice(currentCourse.price?.toString() || '');
-      setDiscountedPrice(currentCourse.discountPrice?.toString() || '');
-      setValidityDays(currentCourse.validityDays?.toString() || '');
-      setAccessType(currentCourse.accessType || 'PAID');
-      setTotalLectures(currentCourse.totalLectures?.toString() || '');
-      setAuthorMessage(currentCourse.authorMessage || '');
-      setSubjectId(currentCourse.subjectId || '');
-      setLanguageId(currentCourse.languageId || '');
-      
-      // Extract duration number from string like "70 min" or "40 hours"
-      const durationMatch = currentCourse.totalDuration?.match(/(\d+)/);
-      setDuration(durationMatch ? durationMatch[1] : '');
-      
-      // Format dates for input fields
-      if (currentCourse.startDate) {
-        const startDateFormatted = new Date(currentCourse.startDate).toISOString().split('T')[0];
-        setStartDate(startDateFormatted);
-      }
-      if (currentCourse.endDate) {
-        const endDateFormatted = new Date(currentCourse.endDate).toISOString().split('T')[0];
-        setEndDate(endDateFormatted);
-      }
-      
-      // Set subject and language names from IDs
-      if (currentCourse.subjectId && subjects.length > 0) {
-        const foundSubject = subjects.find(s => s.id === currentCourse.subjectId);
-        if (foundSubject) setSubject(foundSubject.name);
-      }
-      
-      if (currentCourse.languageId && languages.length > 0) {
-        const foundLanguage = languages.find(l => l.id === currentCourse.languageId);
-        if (foundLanguage) setLanguage(foundLanguage.name);
-      }
-      
-      // Set thumbnail if available
-      if (currentCourse.thumbnailUrl) {
-        setSelectedImage(currentCourse.thumbnailUrl);
-      }
+    if (!currentCourse) return;
+    console.log('📝 UpdateCoursePage: Populating form with course data:', currentCourse);
+    populateBasicFields(currentCourse);
+    populateDates(currentCourse);
+    if (subjects.length > 0 || languages.length > 0) {
+      populateSubjectAndLanguage(currentCourse);
+    }
+    if (currentCourse.thumbnailUrl) {
+      setSelectedImage(currentCourse.thumbnailUrl);
     }
   }, [currentCourse, subjects, languages]);
 
@@ -134,10 +133,10 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
       description,
       price: price,
       discountPrice: discountedPrice || undefined,
-      validityDays: parseInt(validityDays) || 365,
+      validityDays: Number.parseInt(validityDays) || 365,
       accessType,
       totalDuration: `${duration} hours`,
-      totalLectures: parseInt(totalLectures) || 1,
+      totalLectures: Number.parseInt(totalLectures) || 1,
       authorMessage: authorMessage || 'Welcome to this course',
       startDate: new Date(startDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
       endDate: new Date(endDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
@@ -217,7 +216,6 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
 
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
-      setThumbnail(result.assets[0].uri);
     }
   };
 

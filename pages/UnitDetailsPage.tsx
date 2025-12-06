@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   FlatList,
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -36,11 +36,11 @@ const UnitDetailsPage: React.FC = () => {
   };
 
   const handleAddVideo = () => {
-    navigation.navigate('CreateVideoLecture', { unitId: unit.id });
+    (navigation as any).navigate('CreateVideoLecture', { unitId: unit.id });
   };
 
   const handleAddMaterial = () => {
-    navigation.navigate('CreateStudyMaterial', { unitId: unit.id });
+    (navigation as any).navigate('CreateStudyMaterial', { unitId: unit.id });
   };
 
   const renderVideoItem = ({ item }: { item: any }) => (
@@ -60,7 +60,7 @@ const UnitDetailsPage: React.FC = () => {
         </View>
         <TouchableOpacity
           style={styles.editItemButton}
-          onPress={() => navigation.navigate('UpdateVideoLecture', { videoId: item.id })}
+          onPress={() => (navigation as any).navigate('UpdateVideoLecture', { videoId: item.id })}
         >
           <MaterialIcons name="edit" size={16} color="#16423C" />
         </TouchableOpacity>
@@ -84,7 +84,7 @@ const UnitDetailsPage: React.FC = () => {
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() => navigation.navigate('UpdateStudyMaterial', { materialId: item.id })}
+            onPress={() => (navigation as any).navigate('UpdateStudyMaterial', { materialId: item.id })}
           >
             <MaterialIcons name="edit" size={16} color="#16423C" />
           </TouchableOpacity>
@@ -105,6 +105,62 @@ const UnitDetailsPage: React.FC = () => {
 
   const videos = videoLectures || [];
   const materials = studyMaterials || [];
+
+  const renderVideosContent = () => {
+    if (loading.fetchVideos) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#16423C" />
+          <Text style={styles.loadingText}>Loading videos...</Text>
+        </View>
+      );
+    }
+    if (videos.length > 0) {
+      return (
+        <FlatList
+          data={videos}
+          renderItem={renderVideoItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+      );
+    }
+    return (
+      <View style={styles.emptyState}>
+        <MaterialIcons name="play-circle-outline" size={48} color="#CCCCCC" />
+        <Text style={styles.emptyText}>No videos added yet</Text>
+        <Text style={styles.emptySubtext}>Add your first video lecture</Text>
+      </View>
+    );
+  };
+
+  const renderMaterialsContent = () => {
+    if (loading.fetchStudyMaterials) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#16423C" />
+          <Text style={styles.loadingText}>Loading materials...</Text>
+        </View>
+      );
+    }
+    if (materials.length > 0) {
+      return (
+        <FlatList
+          data={materials}
+          renderItem={renderMaterialItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+      );
+    }
+    return (
+      <View style={styles.emptyState}>
+        <MaterialIcons name="description" size={48} color="#CCCCCC" />
+        <Text style={styles.emptyText}>No materials added yet</Text>
+        <Text style={styles.emptySubtext}>Add your first study material</Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -161,47 +217,7 @@ const UnitDetailsPage: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          {activeTab === 'videos' ? (
-            loading.fetchVideos ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#16423C" />
-                <Text style={styles.loadingText}>Loading videos...</Text>
-              </View>
-            ) : videos.length > 0 ? (
-              <FlatList
-                data={videos}
-                renderItem={renderVideoItem}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            ) : (
-              <View style={styles.emptyState}>
-                <MaterialIcons name="play-circle-outline" size={48} color="#CCCCCC" />
-                <Text style={styles.emptyText}>No videos added yet</Text>
-                <Text style={styles.emptySubtext}>Add your first video lecture</Text>
-              </View>
-            )
-          ) : (
-            loading.fetchStudyMaterials ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#16423C" />
-                <Text style={styles.loadingText}>Loading materials...</Text>
-              </View>
-            ) : materials.length > 0 ? (
-              <FlatList
-                data={materials}
-                renderItem={renderMaterialItem}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            ) : (
-              <View style={styles.emptyState}>
-                <MaterialIcons name="description" size={48} color="#CCCCCC" />
-                <Text style={styles.emptyText}>No materials added yet</Text>
-                <Text style={styles.emptySubtext}>Add your first study material</Text>
-              </View>
-            )
-          )}
+          {activeTab === 'videos' ? renderVideosContent() : renderMaterialsContent()}
         </View>
       </View>
     </SafeAreaView>
