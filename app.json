@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Wiznovy Tutor App",
+    "slug": "wiznovyapp",  // Change this to match EAS project
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Wiznovy_logo.png",
+    "scheme": "wiznovyapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Wiznovy_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#16423C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/Wiznovy_logo.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Wiznovy_logo.png",
+        "backgroundColor": "#16423C"
+      },
+      "icon": "./assets/applogo.png",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.wiznovy.tutorapp"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-video"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f5005295-dbb6-47de-a059-f4cc70339b1f"
+      }
+    }
+  }
+}
