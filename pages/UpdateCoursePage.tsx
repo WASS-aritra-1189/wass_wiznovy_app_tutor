@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -10,6 +10,8 @@ import { fetchSubjects, fetchLanguages } from '../store/onboardingSlice';
 import CourseFormBase from '../components/CourseFormBase';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
+import { validateCourseForm, formatCourseData, handleDateChange } from '../utils/courseUtils';
+import { courseStyles } from '../styles/courseStyles';
 
 interface UpdateCoursePageProps {
   route?: {
@@ -63,7 +65,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     dispatch(fetchLanguages());
   }, [dispatch, courseId]);
 
-  const populateBasicFields = (course: any) => {
+  const populateFormFields = (course: any) => {
     setCourseName(course.name || '');
     setDescription(course.description || '');
     setPrice(course.price?.toString() || '');
@@ -76,9 +78,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     setLanguageId(course.languageId || '');
     const durationMatch = course.totalDuration?.match(/(\d+)/);
     setDuration(durationMatch ? durationMatch[1] : '');
-  };
-
-  const populateDates = (course: any) => {
+    
     if (course.startDate) {
       setStartDate(new Date(course.startDate).toISOString().split('T')[0]);
     }
@@ -89,13 +89,10 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
 
 
 
-  // Populate form when course data is loaded
   useEffect(() => {
     if (!currentCourse) return;
     console.log('📝 UpdateCoursePage: Populating form with course data:', currentCourse);
-    populateBasicFields(currentCourse);
-    populateDates(currentCourse);
-
+    populateFormFields(currentCourse);
     if (currentCourse.thumbnailUrl) {
       setSelectedImage(currentCourse.thumbnailUrl);
     }
@@ -112,28 +109,19 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
       return;
     }
     
-    if (!courseName || !description || !price || !duration || !startDate || !endDate) {
-      setErrorMessage('Please fill in all required fields');
+    const validationError = validateCourseForm(courseName, description, price, duration, startDate, endDate);
+    if (validationError) {
+      setErrorMessage(validationError);
       setShowErrorPopup(true);
       setTimeout(() => setShowErrorPopup(false), 3000);
       return;
     }
     
-    let updateData: any = {
-      name: courseName,
-      description,
-      price: price,
-      discountPrice: discountedPrice || undefined,
-      validityDays: Number.parseInt(validityDays) || 365,
-      accessType,
-      totalDuration: `${duration} hours`,
-      totalLectures: Number.parseInt(totalLectures) || 1,
-      authorMessage: authorMessage || 'Welcome to this course',
-      startDate: new Date(startDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
-      endDate: new Date(endDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
-      subjectId: subjectId || undefined,
-      languageId: languageId || undefined,
-    };
+    let updateData: any = formatCourseData(
+      courseName, description, price, discountedPrice, validityDays,
+      accessType, duration, totalLectures, authorMessage, startDate, endDate,
+      subjectId, languageId
+    );
     
     // Add thumbnail if a new one was selected
     if (selectedImage && selectedImage !== currentCourse?.thumbnailUrl) {
@@ -193,51 +181,40 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
 
 
 
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) {
-      setStartDate(selectedDate.toISOString().split('T')[0]);
-    }
-  };
-
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) {
-      setEndDate(selectedDate.toISOString().split('T')[0]);
-    }
-  };
+  const onStartDateChange = handleDateChange(setShowStartDatePicker, setStartDate);
+  const onEndDateChange = handleDateChange(setShowEndDatePicker, setEndDate);
 
   if (loading.fetchDetails) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={courseStyles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#16423C" />
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <View style={courseStyles.header}>
+          <TouchableOpacity onPress={handleBack} style={courseStyles.backButton}>
             <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
-            <Text style={styles.backText}>Update Course</Text>
+            <Text style={courseStyles.backText}>Update Course</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading course details...</Text>
+        <View style={courseStyles.loadingContainer}>
+          <Text style={courseStyles.loadingText}>Loading course details...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={courseStyles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#16423C" />
       
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+      <View style={courseStyles.header}>
+        <TouchableOpacity onPress={handleBack} style={courseStyles.backButton}>
           <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
-          <Text style={styles.backText}>Update Course</Text>
+          <Text style={courseStyles.backText}>Update Course</Text>
         </TouchableOpacity>
-        <View style={styles.headerPlaceholder} />
+        <View style={courseStyles.headerPlaceholder} />
       </View>
       
       <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingView}
+        style={courseStyles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
@@ -266,17 +243,17 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
           setAuthorMessage={setAuthorMessage}
         />
         
-        <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleBack}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+        <View style={courseStyles.buttonContainer}>
+        <TouchableOpacity style={courseStyles.cancelButton} onPress={handleBack}>
+          <Text style={courseStyles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={[styles.submitButton, loading.update && styles.submitButtonDisabled]} 
+          style={[courseStyles.submitButton, loading.update && courseStyles.submitButtonDisabled]} 
           onPress={handleSubmit}
           disabled={loading.update}
         >
-          <Text style={styles.submitButtonText}>
+          <Text style={courseStyles.submitButtonText}>
             {loading.update ? 'Updating...' : 'Update Course'}
           </Text>
         </TouchableOpacity>
@@ -316,231 +293,6 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 15,
-    backgroundColor: '#16423C',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 4,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: 0,
-  },
-  headerPlaceholder: {
-    width: 24,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  formContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: '#E0E0E0',
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#333333',
-    fontWeight: 'bold',
-  },
-  submitButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: '#16423C',
-    marginLeft: 10,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  thumbnailUpload: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 40,
-    marginBottom: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F9F9F9',
-    minHeight: 120,
-  },
-  uploadIcon: {
-    width: 60,
-    height: 60,
-    marginBottom: 8,
-  },
-  uploadText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#01004C',
-    marginBottom: 8,
-    marginTop: 5,
-  },
-  dateInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#333333',
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: '#999999',
-  },
-  descriptionInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-    height: 100,
-  },
-  selectedImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 6,
-  },
-  accessTypeContainer: {
-    flexDirection: 'row',
-    marginBottom: 15,
-    gap: 10,
-  },
-  accessTypeButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
-  },
-  accessTypeButtonActive: {
-    backgroundColor: '#16423C',
-    borderColor: '#16423C',
-  },
-  accessTypeText: {
-    fontSize: 14,
-    color: '#333333',
-    fontWeight: '600',
-  },
-  accessTypeTextActive: {
-    color: '#FFFFFF',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#999999',
-    opacity: 0.7,
-  },
-  bottomSpacer: {
-    height: 100,
-  },
-  dropdownContainer: {
-    position: 'relative',
-    marginBottom: 15,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#000',
-    flex: 1,
-  },
-  dropdownList: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginTop: -8,
-    maxHeight: 150,
-    zIndex: 1000,
-    elevation: 5,
-  },
-  dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  dropdownScrollView: {
-    maxHeight: 150,
-  },
-});
+
 
 export default UpdateCoursePage;

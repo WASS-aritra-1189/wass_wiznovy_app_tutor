@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -9,6 +9,8 @@ import { createCourse } from '../store/courseSlice';
 import CourseFormBase from '../components/CourseFormBase';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
+import { validateCourseForm, formatCourseData, handleDateChange } from '../utils/courseUtils';
+import { courseStyles } from '../styles/courseStyles';
 
 interface CreateCoursePageProps {
   onSubmit?: (courseData: any) => void;
@@ -39,23 +41,19 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async () => {
-    if (!courseName || !description || !price || !duration || !startDate || !endDate) {
-      setErrorMessage('Please fill in all required fields');
+    const validationError = validateCourseForm(courseName, description, price, duration, startDate, endDate);
+    if (validationError) {
+      setErrorMessage(validationError);
       setShowErrorPopup(true);
       setTimeout(() => setShowErrorPopup(false), 3000);
       return;
     }
     
     const courseData: any = {
-      name: courseName,
-      description,
-      price: price,
-      discountPrice: discountedPrice || undefined,
-      validityDays: Number.parseInt(validityDays, 10) || 365,
-      accessType,
-      totalDuration: `${duration} hours`,
-      totalLectures: Number.parseInt(totalLectures, 10) || 1,
-      authorMessage: authorMessage || 'Welcome to this course',
+      ...formatCourseData(
+        courseName, description, price, discountedPrice, validityDays,
+        accessType, duration, totalLectures, authorMessage, startDate, endDate
+      ),
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
     };
@@ -114,42 +112,23 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
     }
   };
 
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
-    try {
-      setShowStartDatePicker(false);
-      if (selectedDate) {
-        setStartDate(selectedDate.toISOString().split('T')[0]);
-      }
-    } catch (error) {
-      console.error('Error handling start date change:', error);
-    }
-  };
-
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
-    try {
-      setShowEndDatePicker(false);
-      if (selectedDate) {
-        setEndDate(selectedDate.toISOString().split('T')[0]);
-      }
-    } catch (error) {
-      console.error('Error handling end date change:', error);
-    }
-  };
+  const onStartDateChange = handleDateChange(setShowStartDatePicker, setStartDate);
+  const onEndDateChange = handleDateChange(setShowEndDatePicker, setEndDate);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={courseStyles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#16423C" />
       
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+      <View style={courseStyles.header}>
+        <TouchableOpacity onPress={handleBack} style={courseStyles.backButton}>
           <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
-          <Text style={styles.backText}>Create New Course</Text>
+          <Text style={courseStyles.backText}>Create New Course</Text>
         </TouchableOpacity>
-        <View style={styles.headerPlaceholder} />
+        <View style={courseStyles.headerPlaceholder} />
       </View>
       
       <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingView}
+        style={courseStyles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
@@ -178,17 +157,17 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
           setAuthorMessage={setAuthorMessage}
         />
         
-        <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleBack}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+        <View style={courseStyles.buttonContainer}>
+        <TouchableOpacity style={courseStyles.cancelButton} onPress={handleBack}>
+          <Text style={courseStyles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={[styles.submitButton, loading.create && styles.submitButtonDisabled]} 
+          style={[courseStyles.submitButton, loading.create && courseStyles.submitButtonDisabled]} 
           onPress={handleSubmit}
           disabled={loading.create}
         >
-          <Text style={styles.submitButtonText}>
+          <Text style={courseStyles.submitButtonText}>
             {loading.create ? 'Creating...' : 'Create Course'}
           </Text>
         </TouchableOpacity>
@@ -254,74 +233,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 15,
-    backgroundColor: '#16423C',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 4,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: 0,
-  },
-  headerPlaceholder: {
-    width: 24,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: '#E0E0E0',
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#333333',
-    fontWeight: 'bold',
-  },
-  submitButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    backgroundColor: '#16423C',
-    marginLeft: 10,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#999999',
-    opacity: 0.7,
-  },
-});
+
 
 export default CreateCoursePage;
