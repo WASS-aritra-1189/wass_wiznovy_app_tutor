@@ -1,15 +1,9 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { updateCourse } from '../store/courseSlice';
 import { useCourseForm } from '../hooks/useCourseForm';
-import CourseFormBase from './CourseFormBase';
-import SuccessPopup from './SuccessPopup';
-import ErrorPopup from './ErrorPopup';
+import CourseFormWrapper from './CourseFormWrapper';
 
 interface Course {
   id: string;
@@ -35,29 +29,7 @@ interface UpdateCourseFormProps {
   onSubmit?: (courseData: any) => void;
 }
 
-const headerStyles = {
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 15,
-    backgroundColor: '#16423C',
-  },
-  backButton: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    padding: 4,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: 0,
-  },
-  headerPlaceholder: { width: 24 },
-};
+
 
 const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, course, onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -112,83 +84,18 @@ const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, c
   if (!visible) return null;
 
   return (
-    <SafeAreaView style={headerStyles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#16423C" />
-      
-      <View style={headerStyles.header}>
-        <TouchableOpacity onPress={onClose} style={headerStyles.backButton}>
-          <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
-          <Text style={headerStyles.backText}>Update Course</Text>
-        </TouchableOpacity>
-        <View style={headerStyles.headerPlaceholder} />
-      </View>
-      
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <CourseFormBase
-          courseName={form.courseName}
-          setCourseName={form.setCourseName}
-          accessType={form.accessType}
-          setAccessType={form.setAccessType}
-          duration={form.duration}
-          setDuration={form.setDuration}
-          totalLectures={form.totalLectures}
-          setTotalLectures={form.setTotalLectures}
-          validityDays={form.validityDays}
-          setValidityDays={form.setValidityDays}
-          startDate={form.startDate}
-          setShowStartDatePicker={form.setShowStartDatePicker}
-          endDate={form.endDate}
-          setShowEndDatePicker={form.setShowEndDatePicker}
-          price={form.price}
-          setPrice={form.setPrice}
-          discountedPrice={form.discountedPrice}
-          setDiscountedPrice={form.setDiscountedPrice}
-          description={form.description}
-          setDescription={form.setDescription}
-          authorMessage={form.authorMessage}
-          setAuthorMessage={form.setAuthorMessage}
-        />
-        
-        {form.showStartDatePicker && (
-          <DateTimePicker value={form.startDate ? new Date(form.startDate) : new Date()} mode="date" display="default" onChange={form.onStartDateChange} />
-        )}
-        
-        {form.showEndDatePicker && (
-          <DateTimePicker value={form.endDate ? new Date(form.endDate) : new Date()} mode="date" display="default" onChange={form.onEndDateChange} />
-        )}
-        
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.submitButton, loading.update && styles.submitButtonDisabled]} 
-            onPress={handleSubmit}
-            disabled={loading.update}
-          >
-            <Text style={styles.submitButtonText}>
-              {loading.update ? 'Updating...' : 'Update Course'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-      
-      <SuccessPopup visible={form.showSuccessPopup} message={form.successMessage} onClose={() => form.setShowSuccessPopup(false)} />
-      <ErrorPopup visible={form.showErrorPopup} message={form.errorMessage} onClose={() => form.setShowErrorPopup(false)} />
-    </SafeAreaView>
+    <CourseFormWrapper
+      title="Update Course"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      form={form}
+      loading={loading.update}
+      submitText="Update Course"
+      loadingText="Updating..."
+    />
   );
 };
 
-const styles = StyleSheet.create({
-  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E0E0E0' },
-  cancelButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#E0E0E0', marginRight: 10, alignItems: 'center' },
-  cancelButtonText: { color: '#333333', fontWeight: 'bold' },
-  submitButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#16423C', marginLeft: 10, alignItems: 'center' },
-  submitButtonText: { color: '#FFFFFF', fontWeight: 'bold' },
-  submitButtonDisabled: { backgroundColor: '#999999', opacity: 0.7 },
-});
+
 
 export default UpdateCourseForm;
