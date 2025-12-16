@@ -20,7 +20,7 @@ import SafeAreaWrapper from '../components/SafeAreaWrapper';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
 import { useNavigationContext } from '../navigation/NavigationContext';
-
+import { VALIDATION_MESSAGES } from '../constants/validationMessages';
 import { loginUser } from '../services/authService';
 import { storeToken } from '../services/storage';
 
@@ -61,7 +61,7 @@ const SignInScreen: React.FC = () => {
     
     if (!password.trim()) {
       // NOSONAR - validation message, not a credential
-      newErrors.password = 'This field is required';
+      newErrors.password =VALIDATION_MESSAGES.PASSWORD_REQUIRED;
     } else if (!validatePassword(password)) {
       newErrors.password = 'Password must be at least 6 characters';
     }
