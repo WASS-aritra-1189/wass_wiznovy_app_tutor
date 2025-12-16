@@ -57,9 +57,16 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
       return;
     }
     
-    console.log('✅ [FORGOT PASSWORD SCREEN] Email validation passed');
-    console.log('🔄 [FORGOT PASSWORD SCREEN] Starting API call...');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      
+      setErrorMessage('Please enter a valid email address');
+      setShowErrorPopup(true);
+      return;
+    }
     
+    
+     
     setLoading(true);
     try {
       const result = await forgotPassword({ email });
@@ -144,7 +151,10 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
                 placeholder="Please enter your email address"
                 placeholderTextColor="#999"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  const filteredText = text.replace(/[^a-zA-Z0-9@.]/g, '');
+                  setEmail(filteredText);
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />

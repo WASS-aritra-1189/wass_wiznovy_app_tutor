@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import React from 'react';
+import { View, TouchableOpacity, StatusBar, KeyboardAvoidingView, Platform, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { createCourse } from '../store/courseSlice';
+import { useCourseForm } from '../hooks/useCourseForm';
+import CourseFormBase from './CourseFormBase';
 import SuccessPopup from './SuccessPopup';
 import ErrorPopup from './ErrorPopup';
-import { CourseFormBase, styles } from './CourseFormBase';
 
 interface CreateCourseFormProps {
   visible: boolean;
@@ -17,148 +20,131 @@ interface CreateCourseFormProps {
 const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.course);
-  
-  const [courseName, setCourseName] = useState('');
-  const [duration, setDuration] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [price, setPrice] = useState('');
-  const [discountedPrice, setDiscountedPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [totalLectures, setTotalLectures] = useState('');
-  const [validityDays, setValidityDays] = useState('');
-  const [authorMessage, setAuthorMessage] = useState('');
-  const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [showErrorPopup, setShowErrorPopup] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const form = useCourseForm();
 
   const handleSubmit = async () => {
-    console.log('🎯 CreateCourseForm: Starting course creation process');
-    
-    if (!courseName || !description || !price || !duration || !startDate || !endDate) {
-      setErrorMessage('Please fill in all required fields');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
-      return;
-    }
-    
-    const courseData = {
-      name: courseName,
-      description,
-      price: price,
-      discountPrice: discountedPrice || undefined,
-      validityDays: Number.parseInt(validityDays) || 365,
-      accessType,
-      totalDuration: `${duration} hours`,
-      totalLectures: Number.parseInt(totalLectures) || 1,
-      authorMessage: authorMessage || 'Welcome to this course',
-      startDate: new Date(startDate).toISOString(),
-      endDate: new Date(endDate).toISOString(),
-    };
-    
-    console.log('📦 CreateCourseForm: Course data prepared:', courseData);
+    if (!form.validateForm()) return;
     
     try {
-      const result = await dispatch(createCourse(courseData));
+      const result = await dispatch(createCourse(form.prepareCourseData()));
       
       if (result.type.endsWith('/fulfilled')) {
-        console.log('✅ CreateCourseForm: Course created successfully');
-        setSuccessMessage('Course created successfully!');
-        setShowSuccessPopup(true);
+        form.showSuccess('Course created successfully!');
         setTimeout(() => {
-          setShowSuccessPopup(false);
-          resetForm();
+          form.setShowSuccessPopup(false);
+          form.resetForm();
           onClose();
           onSubmit?.(result.payload);
         }, 2000);
       } else {
-        console.log('❌ CreateCourseForm: Course creation failed');
-        const errorMsg = result.payload?.message || error || 'Failed to create course';
-        setErrorMessage(errorMsg);
-        setShowErrorPopup(true);
-        setTimeout(() => setShowErrorPopup(false), 3000);
+        form.showError(result.payload?.message || error || 'Failed to create course');
       }
     } catch (err) {
-      console.log('❌ CreateCourseForm: Unexpected error:', err);
-      setErrorMessage('An unexpected error occurred');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
+      form.showError('An unexpected error occurred');
     }
   };
 
-  const resetForm = () => {
-    setCourseName(''); setDuration(''); setStartDate(''); setEndDate('');
-    setPrice(''); setDiscountedPrice(''); setDescription('');
-    setTotalLectures(''); setValidityDays(''); setAuthorMessage(''); setAccessType('PAID');
-  };
-
-  const handleThumbnailUpload = () => {};
-
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) setStartDate(selectedDate.toISOString().split('T')[0]);
-  };
-
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) setEndDate(selectedDate.toISOString().split('T')[0]);
-  };
+  if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create New Course</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#333333" />
-            </TouchableOpacity>
-          </View>
-          
-          <CourseFormBase
-            courseName={courseName} setCourseName={setCourseName}
-            accessType={accessType} setAccessType={setAccessType}
-            duration={duration} setDuration={setDuration}
-            totalLectures={totalLectures} setTotalLectures={setTotalLectures}
-            validityDays={validityDays} setValidityDays={setValidityDays}
-            startDate={startDate} setShowStartDatePicker={setShowStartDatePicker}
-            endDate={endDate} setShowEndDatePicker={setShowEndDatePicker}
-            price={price} setPrice={setPrice}
-            discountedPrice={discountedPrice} setDiscountedPrice={setDiscountedPrice}
-            description={description} setDescription={setDescription}
-            authorMessage={authorMessage} setAuthorMessage={setAuthorMessage}
-            handleThumbnailUpload={handleThumbnailUpload}
-            showStartDatePicker={showStartDatePicker}
-            showEndDatePicker={showEndDatePicker}
-            onStartDateChange={onStartDateChange}
-            onEndDateChange={onEndDateChange}
-          />
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.submitButton, loading.create && styles.submitButtonDisabled]} 
-              onPress={handleSubmit}
-              disabled={loading.create}
-            >
-              <Text style={styles.submitButtonText}>
-                {loading.create ? 'Creating...' : 'Create Course'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          <SuccessPopup visible={showSuccessPopup} message={successMessage} onClose={() => setShowSuccessPopup(false)} />
-          <ErrorPopup visible={showErrorPopup} message={errorMessage} onClose={() => setShowErrorPopup(false)} />
-        </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#16423C" />
+      
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onClose} style={styles.backButton}>
+          <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
+          <Text style={styles.backText}>Create New Course</Text>
+        </TouchableOpacity>
+        <View style={styles.headerPlaceholder} />
       </View>
-    </Modal>
+      
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <CourseFormBase
+          courseName={form.courseName}
+          setCourseName={form.setCourseName}
+          accessType={form.accessType}
+          setAccessType={form.setAccessType}
+          duration={form.duration}
+          setDuration={form.setDuration}
+          totalLectures={form.totalLectures}
+          setTotalLectures={form.setTotalLectures}
+          validityDays={form.validityDays}
+          setValidityDays={form.setValidityDays}
+          startDate={form.startDate}
+          setShowStartDatePicker={form.setShowStartDatePicker}
+          endDate={form.endDate}
+          setShowEndDatePicker={form.setShowEndDatePicker}
+          price={form.price}
+          setPrice={form.setPrice}
+          discountedPrice={form.discountedPrice}
+          setDiscountedPrice={form.setDiscountedPrice}
+          description={form.description}
+          setDescription={form.setDescription}
+          authorMessage={form.authorMessage}
+          setAuthorMessage={form.setAuthorMessage}
+        />
+        
+        {form.showStartDatePicker && (
+          <DateTimePicker value={form.startDate ? new Date(form.startDate) : new Date()} mode="date" display="default" onChange={form.onStartDateChange} />
+        )}
+        
+        {form.showEndDatePicker && (
+          <DateTimePicker value={form.endDate ? new Date(form.endDate) : new Date()} mode="date" display="default" onChange={form.onEndDateChange} />
+        )}
+        
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.submitButton, loading.create && styles.submitButtonDisabled]} 
+            onPress={handleSubmit}
+            disabled={loading.create}
+          >
+            <Text style={styles.submitButtonText}>
+              {loading.create ? 'Creating...' : 'Create Course'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+      
+      <SuccessPopup visible={form.showSuccessPopup} message={form.successMessage} onClose={() => form.setShowSuccessPopup(false)} />
+      <ErrorPopup visible={form.showErrorPopup} message={form.errorMessage} onClose={() => form.setShowErrorPopup(false)} />
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 15,
+    backgroundColor: '#16423C',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 4,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginLeft: 0,
+  },
+  headerPlaceholder: { width: 24 },
+  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E0E0E0' },
+  cancelButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#E0E0E0', marginRight: 10, alignItems: 'center' },
+  cancelButtonText: { color: '#333333', fontWeight: 'bold' },
+  submitButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#16423C', marginLeft: 10, alignItems: 'center' },
+  submitButtonText: { color: '#FFFFFF', fontWeight: 'bold' },
+  submitButtonDisabled: { backgroundColor: '#999999', opacity: 0.7 },
+});
 
 export default CreateCourseForm;

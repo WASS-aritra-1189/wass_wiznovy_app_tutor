@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, SafeAreaView, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { createCourse } from '../store/courseSlice';
-import { fetchSubjects, fetchLanguages } from '../store/onboardingSlice';
+import CourseFormBase from '../components/CourseFormBase';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -21,7 +20,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
   const { loading, error } = useSelector((state: RootState) => state.course);
   
   const [courseName, setCourseName] = useState('');
-  const [subject, setSubject] = useState('');
   const [duration, setDuration] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -32,26 +30,12 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
   const [validityDays, setValidityDays] = useState('');
   const [authorMessage, setAuthorMessage] = useState('');
   const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  const [thumbnail, setThumbnail] = useState(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [subjectId, setSubjectId] = useState('');
-  const [languageId, setLanguageId] = useState('');
-  const [language, setLanguage] = useState('');
-  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  
-  const { subjects, languages } = useSelector((state: RootState) => state.onboarding);
-  
-  React.useEffect(() => {
-    dispatch(fetchSubjects());
-    dispatch(fetchLanguages());
-  }, [dispatch]);
 
   const handleSubmit = async () => {
     if (!courseName || !description || !price || !duration || !startDate || !endDate) {
@@ -73,18 +57,7 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       authorMessage: authorMessage || 'Welcome to this course',
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
-      subjectId: subjectId || undefined,
-      languageId: languageId || undefined,
     };
-    
-    // Add thumbnail if selected
-    if (selectedImage) {
-      courseData.thumbnail = {
-        uri: selectedImage,
-        type: 'image/jpeg',
-        name: 'thumbnail.jpg'
-      };
-    }
     
     try {
       const result = await dispatch(createCourse(courseData));
@@ -96,7 +69,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
           setShowSuccessPopup(false);
           resetForm();
           onSubmit?.(result.payload);
-          // Navigate after onSubmit callback
           setTimeout(() => {
             handleBack();
           }, 100);
@@ -116,7 +88,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
 
   const resetForm = () => {
     setCourseName('');
-    setSubject('');
     setDuration('');
     setStartDate('');
     setEndDate('');
@@ -127,11 +98,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
     setValidityDays('');
     setAuthorMessage('');
     setAccessType('PAID');
-    setSubjectId('');
-    setLanguageId('');
-    setLanguage('');
-    setThumbnail(null);
-    setSelectedImage(null);
   };
   
   const handleBack = () => {
@@ -143,26 +109,6 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       }
     } catch (error) {
       console.log('Navigation error:', error);
-    }
-  };
-
-  const handleThumbnailUpload = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant camera roll permissions to upload images.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-      setThumbnail(result.assets[0].uri);
     }
   };
 
@@ -197,191 +143,30 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-        <Text style={styles.fieldLabel}>Course Name *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Course Name"
-          value={courseName}
-          onChangeText={setCourseName}
+        <CourseFormBase
+          courseName={courseName}
+          setCourseName={setCourseName}
+          accessType={accessType}
+          setAccessType={setAccessType}
+          duration={duration}
+          setDuration={setDuration}
+          totalLectures={totalLectures}
+          setTotalLectures={setTotalLectures}
+          validityDays={validityDays}
+          setValidityDays={setValidityDays}
+          startDate={startDate}
+          setShowStartDatePicker={setShowStartDatePicker}
+          endDate={endDate}
+          setShowEndDatePicker={setShowEndDatePicker}
+          price={price}
+          setPrice={setPrice}
+          discountedPrice={discountedPrice}
+          setDiscountedPrice={setDiscountedPrice}
+          description={description}
+          setDescription={setDescription}
+          authorMessage={authorMessage}
+          setAuthorMessage={setAuthorMessage}
         />
-        
-        <Text style={styles.fieldLabel}>Access Type</Text>
-        <View style={styles.accessTypeContainer}>
-          <TouchableOpacity 
-            style={[styles.accessTypeButton, accessType === 'PAID' && styles.accessTypeButtonActive]}
-            onPress={() => setAccessType('PAID')}
-          >
-            <Text style={[styles.accessTypeText, accessType === 'PAID' && styles.accessTypeTextActive]}>PAID</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.accessTypeButton, accessType === 'FREE' && styles.accessTypeButtonActive]}
-            onPress={() => setAccessType('FREE')}
-          >
-            <Text style={[styles.accessTypeText, accessType === 'FREE' && styles.accessTypeTextActive]}>FREE</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <Text style={styles.fieldLabel}>Subject</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity 
-            style={styles.dropdownButton}
-            onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-          >
-            <Text style={[styles.dropdownText, !subject && styles.placeholderText]}>
-              {subject || 'Select Subject'}
-            </Text>
-          </TouchableOpacity>
-          {showSubjectDropdown && (
-            <View style={styles.dropdownList}>
-              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                {subjects.map((subjectItem, index) => (
-                  <TouchableOpacity
-                    key={`subject-${subjectItem.id || index}`}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setSubject(subjectItem.name);
-                      setSubjectId(subjectItem.id);
-                      setShowSubjectDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownItemText}>{subjectItem.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-        
-        <Text style={styles.fieldLabel}>Language</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity 
-            style={styles.dropdownButton}
-            onPress={() => setShowLanguageDropdown(!showLanguageDropdown)}
-          >
-            <Text style={[styles.dropdownText, !language && styles.placeholderText]}>
-              {language || 'Select Language'}
-            </Text>
-          </TouchableOpacity>
-          {showLanguageDropdown && (
-            <View style={styles.dropdownList}>
-              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                {languages.map((languageItem, index) => (
-                  <TouchableOpacity
-                    key={`language-${languageItem.id || index}`}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setLanguage(languageItem.name);
-                      setLanguageId(languageItem.id);
-                      setShowLanguageDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownItemText}>{languageItem.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-        
-        <Text style={styles.fieldLabel}>Total Duration *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Duration (hours)"
-          value={duration}
-          onChangeText={setDuration}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Total Lectures</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Number of lectures"
-          value={totalLectures}
-          onChangeText={setTotalLectures}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Validity Days</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Course validity in days (default: 365)"
-          value={validityDays}
-          onChangeText={setValidityDays}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Start Date</Text>
-        <TouchableOpacity style={styles.dateInput} onPress={() => setShowStartDatePicker(true)}>
-          <Text style={startDate ? styles.dateText : styles.placeholderText}>
-            {startDate || 'Select Start Date'}
-          </Text>
-          <MaterialIcons name="calendar-today" size={20} color="#666666" />
-        </TouchableOpacity>
-        
-        <Text style={styles.fieldLabel}>End Date</Text>
-        <TouchableOpacity style={styles.dateInput} onPress={() => setShowEndDatePicker(true)}>
-          <Text style={endDate ? styles.dateText : styles.placeholderText}>
-            {endDate || 'Select End Date'}
-          </Text>
-          <MaterialIcons name="calendar-today" size={20} color="#666666" />
-        </TouchableOpacity>
-        
-        
-        <Text style={styles.fieldLabel}>Price *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Price (e.g., 599.00)"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Discounted Price</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Discounted Price (e.g., 399.00)"
-          value={discountedPrice}
-          onChangeText={setDiscountedPrice}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Course Description *</Text>
-        <TextInput
-          style={styles.descriptionInput}
-          placeholder="Enter course description..."
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-        
-        <Text style={styles.fieldLabel}>Author Message</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Welcome message for students"
-          value={authorMessage}
-          onChangeText={setAuthorMessage}
-        />
-        
-        <Text style={styles.fieldLabel}>Thumbnail</Text>
-        <TouchableOpacity style={styles.thumbnailUpload} onPress={handleThumbnailUpload}>
-          {selectedImage ? (
-            <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
-          ) : (
-            <>
-              <Image 
-                source={require('../assets/uploadthumbnail.png')} 
-                style={styles.uploadIcon}
-              />
-              <Text style={styles.uploadText}>Thumbnail should be 1280 X 720</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        
-        <View style={styles.bottomSpacer} />
-        </ScrollView>
         
         <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleBack}>
@@ -463,20 +248,6 @@ const styles = StyleSheet.create({
   headerPlaceholder: {
     width: 24,
   },
-  formContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -511,143 +282,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
-  thumbnailUpload: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 40,
-    marginBottom: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F9F9F9',
-    minHeight: 120,
-  },
-  uploadIcon: {
-    width: 60,
-    height: 60,
-    marginBottom: 8,
-  },
-  uploadText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#01004C',
-    marginBottom: 8,
-    marginTop: 5,
-  },
-  dateInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#333333',
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: '#999999',
-  },
-  descriptionInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-    height: 100,
-  },
-  selectedImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 6,
-  },
-  accessTypeContainer: {
-    flexDirection: 'row',
-    marginBottom: 15,
-    gap: 10,
-  },
-  accessTypeButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
-  },
-  accessTypeButtonActive: {
-    backgroundColor: '#16423C',
-    borderColor: '#16423C',
-  },
-  accessTypeText: {
-    fontSize: 14,
-    color: '#333333',
-    fontWeight: '600',
-  },
-  accessTypeTextActive: {
-    color: '#FFFFFF',
-  },
   submitButtonDisabled: {
     backgroundColor: '#999999',
     opacity: 0.7,
-  },
-  bottomSpacer: {
-    height: 100,
-  },
-  dropdownContainer: {
-    position: 'relative',
-    marginBottom: 15,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#000',
-    flex: 1,
-  },
-  dropdownList: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginTop: -8,
-    maxHeight: 150,
-    zIndex: 1000,
-    elevation: 5,
-  },
-  dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  dropdownScrollView: {
-    maxHeight: 150,
   },
 });
 

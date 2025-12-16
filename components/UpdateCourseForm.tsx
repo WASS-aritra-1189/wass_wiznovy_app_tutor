@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StatusBar, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { updateCourse } from '../store/courseSlice';
+import { useCourseForm } from '../hooks/useCourseForm';
+import CourseFormBase from './CourseFormBase';
 import SuccessPopup from './SuccessPopup';
 import ErrorPopup from './ErrorPopup';
-import { CourseFormBase, styles } from './CourseFormBase';
 
 interface Course {
   id: string;
@@ -32,186 +35,160 @@ interface UpdateCourseFormProps {
   onSubmit?: (courseData: any) => void;
 }
 
+const headerStyles = {
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 15,
+    backgroundColor: '#16423C',
+  },
+  backButton: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    padding: 4,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginLeft: 0,
+  },
+  headerPlaceholder: { width: 24 },
+};
+
 const UpdateCourseForm: React.FC<UpdateCourseFormProps> = ({ visible, onClose, course, onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.course);
-  
-  const [courseName, setCourseName] = useState('');
-  const [duration, setDuration] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [price, setPrice] = useState('');
-  const [discountedPrice, setDiscountedPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [totalLectures, setTotalLectures] = useState('');
-  const [validityDays, setValidityDays] = useState('');
-  const [authorMessage, setAuthorMessage] = useState('');
-  const [accessType, setAccessType] = useState<'PAID' | 'FREE'>('PAID');
-  
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [showErrorPopup, setShowErrorPopup] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const form = useCourseForm();
 
-  // Populate form with course data when course prop changes
   useEffect(() => {
     if (course) {
-      console.log('📝 UpdateCourseForm: Populating form with course data:', course);
-      setCourseName(course.name || '');
-      setDescription(course.description || '');
-      setPrice(course.price?.toString() || '');
-      setDiscountedPrice(course.discountPrice?.toString() || '');
-      setValidityDays(course.validityDays?.toString() || '');
-      setAccessType(course.accessType || 'PAID');
-      setTotalLectures(course.totalLectures?.toString() || '');
-      setAuthorMessage(course.authorMessage || '');
-      
-      // Extract duration number from string like "70 min" or "40 hours"
-      const durationRegex = /(\d+)/;
-      const durationMatch = course.totalDuration ? durationRegex.exec(course.totalDuration) : null;
-      setDuration(durationMatch ? durationMatch[1] : '');
-      
-      // Format dates for input fields
-      if (course.startDate) {
-        const startDateFormatted = new Date(course.startDate).toISOString().split('T')[0];
-        setStartDate(startDateFormatted);
-      }
-      if (course.endDate) {
-        const endDateFormatted = new Date(course.endDate).toISOString().split('T')[0];
-        setEndDate(endDateFormatted);
-      }
+      form.setCourseName(course.name || '');
+      form.setDescription(course.description || '');
+      form.setPrice(course.price?.toString() || '');
+      form.setDiscountedPrice(course.discountPrice?.toString() || '');
+      form.setValidityDays(course.validityDays?.toString() || '');
+      form.setAccessType(course.accessType || 'PAID');
+      form.setTotalLectures(course.totalLectures?.toString() || '');
+      form.setAuthorMessage(course.authorMessage || '');
+      form.setDuration(course.totalDuration ? (/(\d+)/.exec(course.totalDuration)?.[1] || '') : '');
+      if (course.startDate) form.setStartDate(new Date(course.startDate).toISOString().split('T')[0]);
+      if (course.endDate) form.setEndDate(new Date(course.endDate).toISOString().split('T')[0]);
     }
   }, [course]);
 
   const handleSubmit = async () => {
-    console.log('🎯 UpdateCourseForm: Starting course update process');
-    console.log('📦 UpdateCourseForm: Course ID:', course?.id);
-    
     if (!course?.id) {
-      setErrorMessage('Course ID is missing');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
+      form.showError('Course ID is missing');
       return;
     }
-    
-    if (!courseName || !description || !price || !duration || !startDate || !endDate) {
-      setErrorMessage('Please fill in all required fields');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
-      return;
-    }
-    
-    const updateData = {
-      name: courseName,
-      description,
-      price: price,
-      discountPrice: discountedPrice || undefined,
-      validityDays: Number.parseInt(validityDays) || 365,
-      accessType,
-      totalDuration: `${duration} hours`,
-      totalLectures: Number.parseInt(totalLectures) || 1,
-      authorMessage: authorMessage || 'Welcome to this course',
-      startDate: new Date(startDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
-      endDate: new Date(endDate).toISOString().split('T')[0], // Format as YYYY-MM-DD
-    };
-    
-    console.log('📦 UpdateCourseForm: Update data prepared:', updateData);
+    if (!form.validateForm()) return;
     
     try {
-      const result = await dispatch(updateCourse({ 
-        courseId: course.id, 
-        courseData: updateData 
-      }));
+      const formattedStartDate = new Date(form.startDate).toISOString().split('T')[0];
+      const formattedEndDate = new Date(form.endDate).toISOString().split('T')[0];
+      const updateData = { ...form.prepareCourseData(), startDate: formattedStartDate, endDate: formattedEndDate };
+      const result = await dispatch(updateCourse({ courseId: course.id, courseData: updateData }));
       
-      if (result.type.endsWith('/fulfilled')) {
-        console.log('✅ UpdateCourseForm: Course updated successfully');
-        setSuccessMessage('Course updated successfully!');
-        setShowSuccessPopup(true);
+      if (updateCourse.fulfilled.match(result)) {
+        form.showSuccess('Course updated successfully!');
         setTimeout(() => {
-          setShowSuccessPopup(false);
+          form.setShowSuccessPopup(false);
           onClose();
           onSubmit?.(result.payload);
         }, 2000);
       } else {
-        console.log('❌ UpdateCourseForm: Course update failed');
-        const errorMsg = result.payload?.message || error || 'Failed to update course';
-        setErrorMessage(errorMsg);
-        setShowErrorPopup(true);
-        setTimeout(() => setShowErrorPopup(false), 3000);
+        form.showError((result.payload as any)?.message || error || 'Failed to update course');
       }
     } catch (err) {
-      console.log('❌ UpdateCourseForm: Unexpected error:', err);
-      setErrorMessage('An unexpected error occurred');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
+      console.error('Course update failed:', err);
+      form.showError('An unexpected error occurred');
     }
   };
 
-  const handleThumbnailUpload = () => {};
-
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) setStartDate(selectedDate.toISOString().split('T')[0]);
-  };
-
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) setEndDate(selectedDate.toISOString().split('T')[0]);
-  };
+  if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Update Course</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#333333" />
-            </TouchableOpacity>
-          </View>
-          
-          <CourseFormBase
-            courseName={courseName} setCourseName={setCourseName}
-            accessType={accessType} setAccessType={setAccessType}
-            duration={duration} setDuration={setDuration}
-            totalLectures={totalLectures} setTotalLectures={setTotalLectures}
-            validityDays={validityDays} setValidityDays={setValidityDays}
-            startDate={startDate} setShowStartDatePicker={setShowStartDatePicker}
-            endDate={endDate} setShowEndDatePicker={setShowEndDatePicker}
-            price={price} setPrice={setPrice}
-            discountedPrice={discountedPrice} setDiscountedPrice={setDiscountedPrice}
-            description={description} setDescription={setDescription}
-            authorMessage={authorMessage} setAuthorMessage={setAuthorMessage}
-            handleThumbnailUpload={handleThumbnailUpload}
-            showStartDatePicker={showStartDatePicker}
-            showEndDatePicker={showEndDatePicker}
-            onStartDateChange={onStartDateChange}
-            onEndDateChange={onEndDateChange}
-          />
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.submitButton, loading.update && styles.submitButtonDisabled]} 
-              onPress={handleSubmit}
-              disabled={loading.update}
-            >
-              <Text style={styles.submitButtonText}>
-                {loading.update ? 'Updating...' : 'Update Course'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          <SuccessPopup visible={showSuccessPopup} message={successMessage} onClose={() => setShowSuccessPopup(false)} />
-          <ErrorPopup visible={showErrorPopup} message={errorMessage} onClose={() => setShowErrorPopup(false)} />
-        </View>
+    <SafeAreaView style={headerStyles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#16423C" />
+      
+      <View style={headerStyles.header}>
+        <TouchableOpacity onPress={onClose} style={headerStyles.backButton}>
+          <MaterialIcons name="keyboard-arrow-left" size={24} color="#FFFFFF" />
+          <Text style={headerStyles.backText}>Update Course</Text>
+        </TouchableOpacity>
+        <View style={headerStyles.headerPlaceholder} />
       </View>
-    </Modal>
+      
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <CourseFormBase
+          courseName={form.courseName}
+          setCourseName={form.setCourseName}
+          accessType={form.accessType}
+          setAccessType={form.setAccessType}
+          duration={form.duration}
+          setDuration={form.setDuration}
+          totalLectures={form.totalLectures}
+          setTotalLectures={form.setTotalLectures}
+          validityDays={form.validityDays}
+          setValidityDays={form.setValidityDays}
+          startDate={form.startDate}
+          setShowStartDatePicker={form.setShowStartDatePicker}
+          endDate={form.endDate}
+          setShowEndDatePicker={form.setShowEndDatePicker}
+          price={form.price}
+          setPrice={form.setPrice}
+          discountedPrice={form.discountedPrice}
+          setDiscountedPrice={form.setDiscountedPrice}
+          description={form.description}
+          setDescription={form.setDescription}
+          authorMessage={form.authorMessage}
+          setAuthorMessage={form.setAuthorMessage}
+        />
+        
+        {form.showStartDatePicker && (
+          <DateTimePicker value={form.startDate ? new Date(form.startDate) : new Date()} mode="date" display="default" onChange={form.onStartDateChange} />
+        )}
+        
+        {form.showEndDatePicker && (
+          <DateTimePicker value={form.endDate ? new Date(form.endDate) : new Date()} mode="date" display="default" onChange={form.onEndDateChange} />
+        )}
+        
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.submitButton, loading.update && styles.submitButtonDisabled]} 
+            onPress={handleSubmit}
+            disabled={loading.update}
+          >
+            <Text style={styles.submitButtonText}>
+              {loading.update ? 'Updating...' : 'Update Course'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+      
+      <SuccessPopup visible={form.showSuccessPopup} message={form.successMessage} onClose={() => form.setShowSuccessPopup(false)} />
+      <ErrorPopup visible={form.showErrorPopup} message={form.errorMessage} onClose={() => form.setShowErrorPopup(false)} />
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E0E0E0' },
+  cancelButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#E0E0E0', marginRight: 10, alignItems: 'center' },
+  cancelButtonText: { color: '#333333', fontWeight: 'bold' },
+  submitButton: { flex: 1, padding: 12, borderRadius: 6, backgroundColor: '#16423C', marginLeft: 10, alignItems: 'center' },
+  submitButtonText: { color: '#FFFFFF', fontWeight: 'bold' },
+  submitButtonDisabled: { backgroundColor: '#999999', opacity: 0.7 },
+});
 
 export default UpdateCourseForm;

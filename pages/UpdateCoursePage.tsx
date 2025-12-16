@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { updateCourse, fetchCourseDetails } from '../store/courseSlice';
 import { fetchSubjects, fetchLanguages } from '../store/onboardingSlice';
+import CourseFormBase from '../components/CourseFormBase';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
 
@@ -30,7 +30,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
   const courseId = route?.params?.courseId;
   
   const [courseName, setCourseName] = useState('');
-  const [subject, setSubject] = useState('');
+
   const [duration, setDuration] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -51,14 +51,12 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
   const [errorMessage, setErrorMessage] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [languageId, setLanguageId] = useState('');
-  const [language, setLanguage] = useState('');
-  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
-  // Fetch course details and dropdown data on component mount
+  
+
+  
   useEffect(() => {
     if (courseId) {
-      console.log('🔍 UpdateCoursePage: Fetching course details for ID:', courseId);
       dispatch(fetchCourseDetails(courseId));
     }
     dispatch(fetchSubjects());
@@ -89,12 +87,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     }
   };
 
-  const populateSubjectAndLanguage = (course: any) => {
-    const foundSubject = subjects.find(s => s.id === course.subjectId);
-    if (foundSubject) setSubject(foundSubject.name);
-    const foundLanguage = languages.find(l => l.id === course.languageId);
-    if (foundLanguage) setLanguage(foundLanguage.name);
-  };
+
 
   // Populate form when course data is loaded
   useEffect(() => {
@@ -102,9 +95,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     console.log('📝 UpdateCoursePage: Populating form with course data:', currentCourse);
     populateBasicFields(currentCourse);
     populateDates(currentCourse);
-    if (subjects.length > 0 || languages.length > 0) {
-      populateSubjectAndLanguage(currentCourse);
-    }
+
     if (currentCourse.thumbnailUrl) {
       setSelectedImage(currentCourse.thumbnailUrl);
     }
@@ -200,24 +191,7 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
     }
   };
 
-  const handleThumbnailUpload = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant camera roll permissions to upload images.');
-      return;
-    }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
-  };
 
   const onStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartDatePicker(false);
@@ -267,190 +241,30 @@ const UpdateCoursePage: React.FC<UpdateCoursePageProps> = ({ route, onSubmit, on
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-        <Text style={styles.fieldLabel}>Course Name *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Course Name"
-          value={courseName}
-          onChangeText={setCourseName}
+        <CourseFormBase
+          courseName={courseName}
+          setCourseName={setCourseName}
+          accessType={accessType}
+          setAccessType={setAccessType}
+          duration={duration}
+          setDuration={setDuration}
+          totalLectures={totalLectures}
+          setTotalLectures={setTotalLectures}
+          validityDays={validityDays}
+          setValidityDays={setValidityDays}
+          startDate={startDate}
+          setShowStartDatePicker={setShowStartDatePicker}
+          endDate={endDate}
+          setShowEndDatePicker={setShowEndDatePicker}
+          price={price}
+          setPrice={setPrice}
+          discountedPrice={discountedPrice}
+          setDiscountedPrice={setDiscountedPrice}
+          description={description}
+          setDescription={setDescription}
+          authorMessage={authorMessage}
+          setAuthorMessage={setAuthorMessage}
         />
-        
-        <Text style={styles.fieldLabel}>Access Type</Text>
-        <View style={styles.accessTypeContainer}>
-          <TouchableOpacity 
-            style={[styles.accessTypeButton, accessType === 'PAID' && styles.accessTypeButtonActive]}
-            onPress={() => setAccessType('PAID')}
-          >
-            <Text style={[styles.accessTypeText, accessType === 'PAID' && styles.accessTypeTextActive]}>PAID</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.accessTypeButton, accessType === 'FREE' && styles.accessTypeButtonActive]}
-            onPress={() => setAccessType('FREE')}
-          >
-            <Text style={[styles.accessTypeText, accessType === 'FREE' && styles.accessTypeTextActive]}>FREE</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <Text style={styles.fieldLabel}>Subject</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity 
-            style={styles.dropdownButton}
-            onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-          >
-            <Text style={[styles.dropdownText, !subject && styles.placeholderText]}>
-              {subject || 'Select Subject'}
-            </Text>
-          </TouchableOpacity>
-          {showSubjectDropdown && (
-            <View style={styles.dropdownList}>
-              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                {subjects.map((subjectItem, index) => (
-                  <TouchableOpacity
-                    key={`subject-${subjectItem.id || index}`}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setSubject(subjectItem.name);
-                      setSubjectId(subjectItem.id);
-                      setShowSubjectDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownItemText}>{subjectItem.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-        
-        <Text style={styles.fieldLabel}>Language</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity 
-            style={styles.dropdownButton}
-            onPress={() => setShowLanguageDropdown(!showLanguageDropdown)}
-          >
-            <Text style={[styles.dropdownText, !language && styles.placeholderText]}>
-              {language || 'Select Language'}
-            </Text>
-          </TouchableOpacity>
-          {showLanguageDropdown && (
-            <View style={styles.dropdownList}>
-              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                {languages.map((languageItem, index) => (
-                  <TouchableOpacity
-                    key={`language-${languageItem.id || index}`}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setLanguage(languageItem.name);
-                      setLanguageId(languageItem.id);
-                      setShowLanguageDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownItemText}>{languageItem.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-        
-        <Text style={styles.fieldLabel}>Total Duration *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Duration (hours)"
-          value={duration}
-          onChangeText={setDuration}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Total Lectures</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Number of lectures"
-          value={totalLectures}
-          onChangeText={setTotalLectures}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Validity Days</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Course validity in days (default: 365)"
-          value={validityDays}
-          onChangeText={setValidityDays}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Start Date</Text>
-        <TouchableOpacity style={styles.dateInput} onPress={() => setShowStartDatePicker(true)}>
-          <Text style={startDate ? styles.dateText : styles.placeholderText}>
-            {startDate || 'Select Start Date'}
-          </Text>
-          <MaterialIcons name="calendar-today" size={20} color="#666666" />
-        </TouchableOpacity>
-        
-        <Text style={styles.fieldLabel}>End Date</Text>
-        <TouchableOpacity style={styles.dateInput} onPress={() => setShowEndDatePicker(true)}>
-          <Text style={endDate ? styles.dateText : styles.placeholderText}>
-            {endDate || 'Select End Date'}
-          </Text>
-          <MaterialIcons name="calendar-today" size={20} color="#666666" />
-        </TouchableOpacity>
-        
-        <Text style={styles.fieldLabel}>Price *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Price (e.g., 599.00)"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Discounted Price</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Discounted Price (e.g., 399.00)"
-          value={discountedPrice}
-          onChangeText={setDiscountedPrice}
-          keyboardType="numeric"
-        />
-        
-        <Text style={styles.fieldLabel}>Course Description *</Text>
-        <TextInput
-          style={styles.descriptionInput}
-          placeholder="Enter course description..."
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-        
-        <Text style={styles.fieldLabel}>Author Message</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Welcome message for students"
-          value={authorMessage}
-          onChangeText={setAuthorMessage}
-        />
-        
-        <Text style={styles.fieldLabel}>Thumbnail</Text>
-        <TouchableOpacity style={styles.thumbnailUpload} onPress={handleThumbnailUpload}>
-          {selectedImage ? (
-            <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
-          ) : (
-            <>
-              <Image 
-                source={require('../assets/uploadthumbnail.png')} 
-                style={styles.uploadIcon}
-              />
-              <Text style={styles.uploadText}>Thumbnail should be 1280 X 720</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        
-        <View style={styles.bottomSpacer} />
-        </ScrollView>
         
         <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleBack}>

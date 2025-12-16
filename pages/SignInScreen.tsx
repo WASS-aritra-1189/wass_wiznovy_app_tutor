@@ -173,7 +173,8 @@ const SignInScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={(text) => {
-                  setEmail(text);
+                  const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
+                  setEmail(filteredText);
                   if (errors.email) {
                     setErrors(prev => ({...prev, email: undefined}));
                   }
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 60,
     paddingBottom: 15,
   },
   backButton: {
