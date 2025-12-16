@@ -61,7 +61,7 @@ const SignInScreen: React.FC = () => {
     
     if (!password.trim()) {
       // NOSONAR - validation message, not a credential
-      newErrors.password = 'Password is required';
+      newErrors.password = 'This field is required';
     } else if (!validatePassword(password)) {
       newErrors.password = 'Password must be at least 6 characters';
     }
