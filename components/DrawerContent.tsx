@@ -10,9 +10,9 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = React.memo((props) 
   return (
     <MenuPage 
       {...props} 
-      userName={profile?.userDetail?.name?.trim() || 'User'}
+      userName={profile?.tutorDetail?.name?.trim() || 'User'}
       userEmail={profile?.email?.trim() || 'user@example.com'}
-      profileImage={profile?.userDetail?.profile}
+      profileImage={profile?.tutorDetail?.profileImage}
     />
   );
 });

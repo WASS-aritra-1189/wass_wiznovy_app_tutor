@@ -43,8 +43,7 @@ const CourseFormBase: React.FC<CourseFormBaseProps> = ({
   
   const [subject, setSubject] = useState('');
   const [language, setLanguage] = useState('');
-  const [subjectId, setSubjectId] = useState('');
-  const [languageId, setLanguageId] = useState('');
+
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -118,7 +117,7 @@ const CourseFormBase: React.FC<CourseFormBaseProps> = ({
                   style={styles.dropdownItem}
                   onPress={() => {
                     setSubject(subjectItem.name);
-                    setSubjectId(subjectItem.id);
+
                     setShowSubjectDropdown(false);
                   }}
                 >
@@ -149,7 +148,7 @@ const CourseFormBase: React.FC<CourseFormBaseProps> = ({
                   style={styles.dropdownItem}
                   onPress={() => {
                     setLanguage(languageItem.name);
-                    setLanguageId(languageItem.id);
+
                     setShowLanguageDropdown(false);
                   }}
                 >

@@ -14,7 +14,7 @@ import ErrorPopup from './ErrorPopup';
 interface CreateCourseFormProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit?: (courseData: any) => void;
+  onSubmit?: (courseData: unknown) => void;
 }
 
 const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, onSubmit }) => {
@@ -28,7 +28,7 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
     try {
       const result = await dispatch(createCourse(form.prepareCourseData()));
       
-      if (result.type.endsWith('/fulfilled')) {
+      if (createCourse.fulfilled.match(result)) {
         form.showSuccess('Course created successfully!');
         setTimeout(() => {
           form.setShowSuccessPopup(false);
@@ -37,9 +37,10 @@ const CreateCourseForm: React.FC<CreateCourseFormProps> = ({ visible, onClose, o
           onSubmit?.(result.payload);
         }, 2000);
       } else {
-        form.showError(result.payload?.message || error || 'Failed to create course');
+        form.showError((result.payload as any)?.message || error || 'Failed to create course');
       }
     } catch (err) {
+      console.error('Course creation failed:', err);
       form.showError('An unexpected error occurred');
     }
   };

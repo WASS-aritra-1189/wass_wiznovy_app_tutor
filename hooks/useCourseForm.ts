@@ -3,7 +3,7 @@ import { useState } from 'react';
 export const useCourseForm = () => {
   const [courseName, setCourseName] = useState('');
   const setCourseNameWithValidation = (text: string) => {
-    setCourseName(text.replace(/[^a-zA-Z0-9\s]/g, ''));
+    setCourseName(text.replaceAll(/[^a-zA-Z0-9\s]/g, ''));
   };
   const [duration, setDuration] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -24,14 +24,18 @@ export const useCourseForm = () => {
 
   const handleThumbnailUpload = () => {};
 
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
+  const onStartDateChange = (_: any, selectedDate?: Date) => {
     setShowStartDatePicker(false);
-    if (selectedDate) setStartDate(selectedDate.toISOString().split('T')[0]);
+    if (selectedDate && !Number.isNaN(selectedDate.getTime())) {
+      setStartDate(selectedDate.toISOString().split('T')[0]);
+    }
   };
 
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
+  const onEndDateChange = (_: any, selectedDate?: Date) => {
     setShowEndDatePicker(false);
-    if (selectedDate) setEndDate(selectedDate.toISOString().split('T')[0]);
+    if (selectedDate && !Number.isNaN(selectedDate.getTime())) {
+      setEndDate(selectedDate.toISOString().split('T')[0]);
+    }
   };
 
   const validateForm = () => {
@@ -49,13 +53,13 @@ export const useCourseForm = () => {
     description,
     price,
     discountPrice: discountedPrice || undefined,
-    validityDays: Number.parseInt(validityDays) || 365,
+    validityDays: validityDays && !Number.isNaN(Number.parseInt(validityDays)) ? Number.parseInt(validityDays) : 365,
     accessType,
     totalDuration: `${duration} hours`,
-    totalLectures: Number.parseInt(totalLectures) || 1,
+    totalLectures: totalLectures && !Number.isNaN(Number.parseInt(totalLectures)) ? Number.parseInt(totalLectures) : 1,
     authorMessage: authorMessage || 'Welcome to this course',
-    startDate: new Date(startDate).toISOString(),
-    endDate: new Date(endDate).toISOString(),
+    startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
+    endDate: endDate ? new Date(endDate).toISOString() : new Date().toISOString(),
   });
 
   const showSuccess = (msg: string) => {

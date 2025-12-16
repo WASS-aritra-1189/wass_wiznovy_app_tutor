@@ -39,8 +39,8 @@ const PaymentCardsGrid: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        {paymentCards.slice(0, 2).map((card, index) => (
-          <View key={index} style={styles.cardWrapper}>
+        {paymentCards.slice(0, 2).map((card) => (
+          <View key={card.title} style={styles.cardWrapper}>
             <InfoCard
               image={card.image}
               title={card.title}
@@ -51,8 +51,8 @@ const PaymentCardsGrid: React.FC = () => {
       </View>
       
       <View style={styles.row}>
-        {paymentCards.slice(2, 4).map((card, index) => (
-          <View key={index + 2} style={styles.cardWrapper}>
+        {paymentCards.slice(2, 4).map((card) => (
+          <View key={card.title} style={styles.cardWrapper}>
             <InfoCard
               image={card.image}
               title={card.title}
@@ -63,8 +63,8 @@ const PaymentCardsGrid: React.FC = () => {
       </View>
       
       <View style={styles.row}>
-        {paymentCards.slice(4, 6).map((card, index) => (
-          <View key={index + 4} style={styles.cardWrapper}>
+        {paymentCards.slice(4, 6).map((card) => (
+          <View key={card.title} style={styles.cardWrapper}>
             <InfoCard
               image={card.image}
               title={card.title}
