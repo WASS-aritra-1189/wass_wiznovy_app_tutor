@@ -3,16 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Image,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import SafeAreaWrapper from '../components/SafeAreaWrapper';
 import Footer from '../components/Footer';
-import SubjectTutorCard, { SubjectTutor } from '../components/SubjectTutorCard';
+import SubjectTutorCard from '../components/SubjectTutorCard';
 import AboutAuthor from '../components/AboutAuthor';
 import Speciality from '../components/Speciality';
 import Availability from '../components/Availability';

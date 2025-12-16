@@ -6,12 +6,12 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ScrollView, 
-  SafeAreaView, 
   StatusBar, 
   Alert, 
   Image, 
   ActivityIndicator 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';

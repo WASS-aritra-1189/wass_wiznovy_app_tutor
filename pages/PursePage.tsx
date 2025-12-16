@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
 interface PursePageProps {
@@ -17,7 +17,7 @@ interface PursePageProps {
 
 const PursePage: React.FC<PursePageProps> = ({ onBack, navigation }) => {
   const [balance] = useState(2450.75);
-  const [pendingAmount] = useState(320.50);
+  const [pendingAmount] = useState(320.5);
 
   const handleAddBankAccount = () => {
     navigation?.navigate('AddBankAccount');

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, StatusBar, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -24,8 +25,8 @@ const UploadUnitPage: React.FC<UploadUnitPageProps> = ({ navigation, route, onBa
       unitName,
       subject,
       duration,
-      totalVideos: parseInt(totalVideos) || 0,
-      totalMaterials: parseInt(totalMaterials) || 0,
+      totalVideos: Number.parseInt(totalVideos) || 0,
+      totalMaterials: Number.parseInt(totalMaterials) || 0,
       description,
       courseName
     };

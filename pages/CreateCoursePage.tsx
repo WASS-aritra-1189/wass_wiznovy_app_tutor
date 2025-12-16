@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSelector, useDispatch } from 'react-redux';
@@ -45,15 +46,15 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       return;
     }
     
-    let courseData: any = {
+    const courseData: any = {
       name: courseName,
       description,
       price: price,
       discountPrice: discountedPrice || undefined,
-      validityDays: parseInt(validityDays) || 365,
+      validityDays: Number.parseInt(validityDays, 10) || 365,
       accessType,
       totalDuration: `${duration} hours`,
-      totalLectures: parseInt(totalLectures) || 1,
+      totalLectures: Number.parseInt(totalLectures, 10) || 1,
       authorMessage: authorMessage || 'Welcome to this course',
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
@@ -80,6 +81,7 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
         setTimeout(() => setShowErrorPopup(false), 3000);
       }
     } catch (err) {
+      console.error('Course creation error:', err);
       setErrorMessage('An unexpected error occurred');
       setShowErrorPopup(true);
       setTimeout(() => setShowErrorPopup(false), 3000);
@@ -108,21 +110,29 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
         navigation.navigate('Home');
       }
     } catch (error) {
-      console.log('Navigation error:', error);
+      console.error('Navigation error:', error);
     }
   };
 
   const onStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) {
-      setStartDate(selectedDate.toISOString().split('T')[0]);
+    try {
+      setShowStartDatePicker(false);
+      if (selectedDate) {
+        setStartDate(selectedDate.toISOString().split('T')[0]);
+      }
+    } catch (error) {
+      console.error('Error handling start date change:', error);
     }
   };
 
   const onEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) {
-      setEndDate(selectedDate.toISOString().split('T')[0]);
+    try {
+      setShowEndDatePicker(false);
+      if (selectedDate) {
+        setEndDate(selectedDate.toISOString().split('T')[0]);
+      }
+    } catch (error) {
+      console.error('Error handling end date change:', error);
     }
   };
 
@@ -187,7 +197,14 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       
       {showStartDatePicker && (
         <DateTimePicker
-          value={startDate ? new Date(startDate) : new Date()}
+          value={(() => {
+            try {
+              return startDate ? new Date(startDate) : new Date();
+            } catch (error) {
+              console.error('Error parsing start date:', error);
+              return new Date();
+            }
+          })()}
           mode="date"
           display="default"
           onChange={onStartDateChange}
@@ -196,7 +213,14 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       
       {showEndDatePicker && (
         <DateTimePicker
-          value={endDate ? new Date(endDate) : new Date()}
+          value={(() => {
+            try {
+              return endDate ? new Date(endDate) : new Date();
+            } catch (error) {
+              console.error('Error parsing end date:', error);
+              return new Date();
+            }
+          })()}
           mode="date"
           display="default"
           onChange={onEndDateChange}
@@ -206,13 +230,25 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({ onSubmit, onBack, n
       <SuccessPopup
         visible={showSuccessPopup}
         message={successMessage}
-        onClose={() => setShowSuccessPopup(false)}
+        onClose={() => {
+          try {
+            setShowSuccessPopup(false);
+          } catch (error) {
+            console.error('Error closing success popup:', error);
+          }
+        }}
       />
       
       <ErrorPopup
         visible={showErrorPopup}
         message={errorMessage}
-        onClose={() => setShowErrorPopup(false)}
+        onClose={() => {
+          try {
+            setShowErrorPopup(false);
+          } catch (error) {
+            console.error('Error closing error popup:', error);
+          }
+        }}
       />
     </SafeAreaView>
   );

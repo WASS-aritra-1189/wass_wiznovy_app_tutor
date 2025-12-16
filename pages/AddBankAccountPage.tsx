@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -79,7 +80,7 @@ const AddBankAccountPage: React.FC<AddBankAccountPageProps> = ({ navigation, onB
               style={styles.input}
               placeholder="Enter full name as per bank records"
               value={accountHolderName}
-              onChangeText={(text) => setAccountHolderName(text.replace(/[^a-zA-Z\s]/g, ''))}
+              onChangeText={(text) => setAccountHolderName(text.replaceAll(/[^a-zA-Z\s]/g, ''))}
             />
 
             <Text style={styles.fieldLabel}>Bank Name *</Text>
@@ -87,7 +88,7 @@ const AddBankAccountPage: React.FC<AddBankAccountPageProps> = ({ navigation, onB
               style={styles.input}
               placeholder="Enter bank name"
               value={bankName}
-              onChangeText={(text) => setBankName(text.replace(/[^a-zA-Z\s]/g, ''))}
+              onChangeText={(text) => setBankName(text.replaceAll(/[^a-zA-Z\s]/g, ''))}
             />
 
 
@@ -125,7 +126,7 @@ const AddBankAccountPage: React.FC<AddBankAccountPageProps> = ({ navigation, onB
               style={styles.input}
               placeholder="Enter IFSC code"
               value={ifscCode}
-              onChangeText={(text) => setIfscCode(text.replace(/[^a-zA-Z0-9]/g, ''))}
+              onChangeText={(text) => setIfscCode(text.replaceAll(/[^a-zA-Z0-9]/g, ''))}
               autoCapitalize="characters"
             />
 
@@ -134,7 +135,7 @@ const AddBankAccountPage: React.FC<AddBankAccountPageProps> = ({ navigation, onB
               style={styles.input}
               placeholder="Enter SWIFT code (for international transfers)"
               value={swiftCode}
-              onChangeText={(text) => setSwiftCode(text.replace(/[^a-zA-Z0-9]/g, ''))}
+              onChangeText={(text) => setSwiftCode(text.replaceAll(/[^a-zA-Z0-9]/g, ''))}
               autoCapitalize="characters"
             />
 

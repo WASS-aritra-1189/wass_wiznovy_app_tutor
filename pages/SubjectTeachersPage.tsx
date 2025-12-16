@@ -3,13 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Image,
   ScrollView,
-  FlatList,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import SafeAreaWrapper from '../components/SafeAreaWrapper';
@@ -19,9 +18,9 @@ import SubjectTutorCard, { SubjectTutor } from '../components/SubjectTutorCard';
 const { width: screenWidth } = Dimensions.get('window');
 
 const BANNER_IMAGES = [
-  require('../assets/categorymain.png'),
-  require('../assets/categorymain.png'),
-  require('../assets/categorymain.png'),
+  { id: 'banner-1', source: require('../assets/categorymain.png') },
+  { id: 'banner-2', source: require('../assets/categorymain.png') },
+  { id: 'banner-3', source: require('../assets/categorymain.png') },
 ];
 
 interface SubjectTeachersPageProps {
@@ -162,10 +161,10 @@ const SubjectTeachersPage: React.FC<SubjectTeachersPageProps> = ({
           setCurrentIndex(newIndex);
         }}
       >
-        {BANNER_IMAGES.map((image, index) => (
+        {BANNER_IMAGES.map((banner, index) => (
           <Image 
-            key={index}
-            source={image} 
+            key={banner.id}
+            source={banner.source} 
             style={[styles.categoryImage, { width: imageWidth }]}
             resizeMode="cover"
           />
@@ -174,9 +173,9 @@ const SubjectTeachersPage: React.FC<SubjectTeachersPageProps> = ({
       
       <View style={styles.paginationOverlay}>
         <View style={styles.paginationContainer}>
-          {BANNER_IMAGES.map((_, index) => (
+          {BANNER_IMAGES.map((banner, index) => (
             <View
-              key={index}
+              key={`dot-${banner.id}`}
               style={[
                 styles.paginationDot,
                 currentIndex === index && styles.paginationDotActive

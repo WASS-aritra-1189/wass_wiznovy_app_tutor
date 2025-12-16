@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -11,13 +12,7 @@ interface WithdrawPageProps {
 
 const WithdrawPage: React.FC<WithdrawPageProps> = ({ navigation, route, onBack }) => {
   // Get bank account from navigation params or use existing state
-  const [bankAccount, setBankAccount] = useState(route?.params?.bankAccount || null);
-  // const [bankAccount, setBankAccount] = useState({
-  //   accountNumber: '****1234',
-  //   bankName: 'Chase Bank',
-  //   accountHolder: 'John Doe',
-  //   routingNumber: '****5678'
-  // });
+  const [bankAccount] = useState(route?.params?.bankAccount || null);
 
   const handleGoBack = () => {
     if (onBack) {

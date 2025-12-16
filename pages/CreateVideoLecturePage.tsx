@@ -5,13 +5,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Image,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -57,6 +57,7 @@ const CreateVideoLecturePage: React.FC = () => {
         setSelectedVideo(file.uri);
       }
     } catch (error) {
+      console.error('Video upload error:', error);
       Alert.alert('Error', 'Failed to select video file');
     }
   };
@@ -98,7 +99,7 @@ const CreateVideoLecturePage: React.FC = () => {
         title: title.trim(),
         description: description.trim(),
         unitId,
-        duration: parseInt(duration),
+        duration: Number.parseInt(duration),
       };
 
       if (selectedVideo) {

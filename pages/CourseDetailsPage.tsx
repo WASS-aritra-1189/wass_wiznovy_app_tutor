@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Image,
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -38,13 +38,13 @@ const CourseDetailsPage: React.FC = () => {
   };
 
   const handleCreateUnit = () => {
-    navigation.navigate('CreateUnit', { courseId: actualCourseId });
+    (navigation as any).navigate('CreateUnit', { courseId: actualCourseId });
   };
 
   const renderUnit = ({ item }: { item: any }) => (
     <TouchableOpacity 
       style={styles.unitCard}
-      onPress={() => navigation.navigate('UnitDetails', { unit: item })}
+      onPress={() => (navigation as any).navigate('UnitDetails', { unit: item })}
       activeOpacity={0.7}
     >
       <View style={styles.unitContent}>
@@ -100,7 +100,7 @@ const CourseDetailsPage: React.FC = () => {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.editButton} 
-          onPress={() => navigation.navigate('UpdateCourse', { courseId: actualCourseId })}
+          onPress={() => (navigation as any).navigate('UpdateCourse', { courseId: actualCourseId })}
         >
           <MaterialIcons name="edit" size={20} color="#FFFFFF" />
         </TouchableOpacity>

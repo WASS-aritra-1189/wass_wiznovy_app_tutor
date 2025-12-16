@@ -3,19 +3,17 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
-  Image,
+  
   ScrollView,
-  Alert,
+
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchProfile } from '../store/profileSlice';
-import GradientBanner from '../components/GradientBanner';
-import ProfileCard from '../components/ProfileCard';
 import Button from '../components/Button';
 import ProfileStatusCard from '../components/ProfileStatusCard';
 import ProfileInfoCard from '../components/ProfileInfoCard';
@@ -25,9 +23,9 @@ import TermsConditionsPopup from '../components/TermsConditionsPopup';
 import LogoutConfirmationPopup from '../components/LogoutConfirmationPopup';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
-import SafeAreaWrapper from '../components/SafeAreaWrapper';
+
 import { logoutUser } from '../services/authService';
-import { removeToken } from '../services/storage';
+
 import { RootState, AppDispatch } from '../store/store';
 
 interface ProfilePageProps {
@@ -160,9 +158,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         }, 2000);
       }
     } catch (error) {
+      console.error('Logout error:', error);
       setErrorMessage('Network error during logout');
       setShowErrorPopup(true);
-      // Still logout locally even if API fails
+      
       setTimeout(() => {
         setShowErrorPopup(false);
         onLogout?.();
@@ -414,9 +413,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 15,
     marginTop: 20,
-  },
-  policyButton: {
-    flex: 1,
   },
   supportButton: {
     flex: 1,

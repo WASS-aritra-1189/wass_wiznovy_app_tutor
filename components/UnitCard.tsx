@@ -12,7 +12,7 @@ interface UnitCardProps {
   unitImage?: any;
   onPress?: () => void;
   onEdit?: () => void;
-  unitId?: string;
+
 }
 
 const UnitCard: React.FC<UnitCardProps> = ({

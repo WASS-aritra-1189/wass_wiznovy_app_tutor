@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
-  TextInput,
+  
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -175,11 +175,7 @@ const OtpVerificationScreen: React.FC = () => {
             </Text>
             
             <View style={styles.timerContainer}>
-              {!canResend ? (
-                <Text style={styles.timerText}>
-                  Resend OTP in {timer} seconds
-                </Text>
-              ) : (
+              {canResend ? (
                 <TouchableOpacity 
                   onPress={handleResendOtp}
                   disabled={resendLoading}
@@ -189,6 +185,10 @@ const OtpVerificationScreen: React.FC = () => {
                     {resendLoading ? 'Sending...' : 'Resend OTP'}
                   </Text>
                 </TouchableOpacity>
+              ) : (
+                <Text style={styles.timerText}>
+                  Resend OTP in {timer} seconds
+                </Text>
               )}
             </View>
 

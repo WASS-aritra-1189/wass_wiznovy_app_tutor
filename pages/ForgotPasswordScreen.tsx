@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   TextInput,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
@@ -152,7 +152,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={(text) => {
-                  const filteredText = text.replace(/[^a-zA-Z0-9@.]/g, '');
+                  const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
                 }}
                 keyboardType="email-address"

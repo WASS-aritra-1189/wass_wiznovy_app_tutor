@@ -3,23 +3,23 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
+  
   Platform,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+
 import Button from '../components/Button';
 import ValidationPopup from '../components/ValidationPopup';
 import SafeAreaWrapper from '../components/SafeAreaWrapper';
-import { getCountries, getCities, getGoals, getTopics, getQualifications, updateUserDetails, uploadDocument, uploadProfileImage } from '../services/onboardingService';
+import { getCountries, getCities, getQualifications, uploadDocument, uploadProfileImage } from '../services/onboardingService';
 import { useNavigationContext } from '../navigation/NavigationContext';
 import { getToken } from '../services/storage';
 
@@ -27,7 +27,6 @@ import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
 
 const OnboardingFlow: React.FC = () => {
-  const navigation = useNavigation();
   const { onAuthSuccess } = useNavigationContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(new Set<number>());
@@ -58,14 +57,12 @@ const OnboardingFlow: React.FC = () => {
   const [dobError, setDobError] = useState('');
   const [countries, setCountries] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
-  const [topics, setTopics] = useState<any[]>([]);
+
+
   const [qualifications, setQualifications] = useState<any[]>([]);
 
   React.useEffect(() => {
     fetchCountries();
-    fetchGoals();
-    fetchTopics();
     fetchQualifications();
   }, []);
 
@@ -80,16 +77,7 @@ const OnboardingFlow: React.FC = () => {
     }
   };
 
-  const fetchGoals = async () => {
-    try {
-      const result = await getGoals(20, 0);
-      if (result.success && result.data) {
-        setGoals(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch goals:', error);
-    }
-  };
+
 
   const fetchCities = async (countryId: string) => {
     try {
@@ -109,16 +97,7 @@ const OnboardingFlow: React.FC = () => {
     }
   };
 
-  const fetchTopics = async () => {
-    try {
-      const result = await getTopics(20, 0);
-      if (result.success && result.data) {
-        setTopics(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch topics:', error);
-    }
-  };
+
 
   const fetchQualifications = async () => {
     try {
@@ -175,10 +154,11 @@ const OnboardingFlow: React.FC = () => {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1:
+      case 1: {
         if (!formData.dateOfBirth) return false;
         const age = calculateAge(formData.dateOfBirth);
         return age >= 18;
+      }
       case 2:
         return formData.gender !== '';
       case 3:
@@ -657,7 +637,11 @@ const OnboardingFlow: React.FC = () => {
         {/* Continue Button */}
         <View style={styles.buttonContainer}>
           <Button
-            title={loading ? "Uploading..." : currentStep === 7 ? "Complete" : "Continue"}
+            title={(() => {
+              if (loading) return "Uploading...";
+              if (currentStep === 7) return "Complete";
+              return "Continue";
+            })()}
             onPress={handleContinue}
             variant="primary"
             style={StyleSheet.flatten([styles.continueButton, (!isStepValid() || loading) && styles.disabledButton])}

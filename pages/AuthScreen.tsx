@@ -3,15 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Dimensions,
   Image,
-  TouchableOpacity,
-  ScrollView,
   BackHandler,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Button from '../components/Button';
 

@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
+import {DrawerContentComponentProps } from '@react-navigation/drawer';
 
 interface MenuPageProps extends DrawerContentComponentProps {
   userName?: string;

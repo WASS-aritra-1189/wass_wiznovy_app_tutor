@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, StatusBar, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -42,6 +43,7 @@ const UploadVideoPage: React.FC<UploadVideoPageProps> = ({ navigation, route, on
         setSelectedVideo(result.assets[0]);
       }
     } catch (error) {
+      console.error('Video picker error:', error);
       Alert.alert('Error', 'Failed to pick video');
     }
   };

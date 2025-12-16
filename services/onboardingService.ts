@@ -90,7 +90,7 @@ export const getTopics = async (limit: number = 20, offset: number = 0): Promise
 export const getSubjects = async (limit: number = 20, offset: number = 0): Promise<OnboardingResponse> => {
   try {
     const token = await getToken();
-    const response = await fetchData(`${API_BASE_URL}/subjects/all?limit=${limit}&offset=${offset}&status=ACTIVE`, token);
+    const response = await fetchData(`${API_BASE_URL}/subjects/all?limit=${limit}&offset=${offset}&status=ACTIVE`, token || undefined);
     return handleFetchResponse(response, 'Subjects fetched successfully', 'Failed to fetch subjects');
   } catch (error) {
     return { success: false, message: `Network error: ${error}` };

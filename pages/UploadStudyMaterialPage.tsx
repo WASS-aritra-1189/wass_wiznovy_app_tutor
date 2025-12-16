@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, StatusBar, Alert, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, StatusBar, Alert, Image, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { studyMaterialService, CreateStudyMaterialData } from '../services/studyMaterialService';
@@ -89,6 +90,7 @@ const UploadStudyMaterialPage: React.FC<UploadStudyMaterialPageProps> = ({ navig
         setSelectedFile(result.assets[0]);
       }
     } catch (error) {
+      console.error('Document picker error:', error);
       Alert.alert('Error', 'Failed to pick document');
     }
   };

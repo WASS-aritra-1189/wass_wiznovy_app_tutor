@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Animated,
   PanResponder,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Video, ResizeMode } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -51,11 +51,14 @@ export default function YouTubeStylePlayer() {
       
       return () => {
         // Cleanup when screen loses focus
-        try {
-          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-        } catch (error) {
-          console.log('Failed to reset orientation on unfocus');
-        }
+        (async () => {
+          try {
+            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+          } catch (error) {
+            console.error('Failed to reset orientation on unfocus:', error);
+            console.log('Failed to reset orientation on unfocus');
+          }
+        })();
       };
     }, [])
   );
@@ -162,16 +165,18 @@ export default function YouTubeStylePlayer() {
         let newPos = Math.max(0, Math.min(barWidth, gesture.dx + currentWidth));
         setDragPosition(newPos);
       },
-      onPanResponderRelease: async (_, gesture) => {
-        const barWidth = dimensions.width - 180;
-        const currentWidth = dragging ? dragPosition : getProgressWidth();
-        const progress = Math.max(0, Math.min(1, currentWidth / barWidth));
-        const newTime = progress * (status.durationMillis || 0);
-        if (videoRef.current) {
-          await videoRef.current.setPositionAsync(newTime);
-        }
-        setDragging(false);
-        setDragPosition(0);
+      onPanResponderRelease: (_, gesture) => {
+        (async () => {
+          const barWidth = dimensions.width - 180;
+          const currentWidth = dragging ? dragPosition : getProgressWidth();
+          const progress = Math.max(0, Math.min(1, currentWidth / barWidth));
+          const newTime = progress * (status.durationMillis || 0);
+          if (videoRef.current) {
+            await videoRef.current.setPositionAsync(newTime);
+          }
+          setDragging(false);
+          setDragPosition(0);
+        })().catch(console.error);
       },
     })
   ).current;
@@ -249,6 +254,7 @@ export default function YouTubeStylePlayer() {
                   try {
                     await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
                   } catch (error) {
+                    console.error('Failed to reset orientation:', error);
                     console.log('Failed to reset orientation');
                   }
                 }, 100);
@@ -270,6 +276,7 @@ export default function YouTubeStylePlayer() {
                     try {
                       await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
                     } catch (error) {
+                      console.error('Failed to reset orientation:', error);
                       console.log('Failed to reset orientation');
                     }
                   }, 100);
@@ -298,11 +305,23 @@ export default function YouTubeStylePlayer() {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={status.didJustFinish ? replayVideo : togglePlayPause}>
-              <Ionicons
-                name={status.didJustFinish ? "refresh" : (status.isPlaying ? "pause" : "play")}
-                size={50}
-                color="#fff"
-              />
+              {(() => {
+                let iconName: "refresh" | "pause" | "play";
+                if (status.didJustFinish) {
+                  iconName = "refresh";
+                } else if (status.isPlaying) {
+                  iconName = "pause";
+                } else {
+                  iconName = "play";
+                }
+                return (
+                  <Ionicons
+                    name={iconName}
+                    size={50}
+                    color="#fff"
+                  />
+                );
+              })()}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={skipForward}>
@@ -328,7 +347,9 @@ export default function YouTubeStylePlayer() {
             <View
               style={styles.progressBarContainer}
               onStartShouldSetResponder={() => true}
-              onResponderRelease={handleBarPress}
+              onResponderRelease={(e) => {
+                handleBarPress(e).catch(console.error);
+              }}
             >
               <View style={styles.progressBarBackground}>
                 <View

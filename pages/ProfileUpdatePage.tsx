@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { View, StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileUpdateForm from '../components/ProfileUpdateForm';
 
 const ProfileUpdatePage: React.FC = () => {

@@ -7,10 +7,10 @@ import {
   StatusBar,
   FlatList,
   Dimensions,
-  SafeAreaView,
   ViewToken,
-  ImageSourcePropType,
+  
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import SkipButton from '../components/SkipButton';
 import SafeAreaWrapper from '../components/SafeAreaWrapper';
@@ -39,6 +39,85 @@ interface WalkthroughScreenProps {
   onComplete?: () => void;
   onSkip?: () => void;
 }
+
+interface FooterProps {
+  slides: SlideItem[];
+  currentSlide: number;
+  handleSkip: () => void;
+  goToNextSlide: () => void;
+}
+
+interface SlideProps {
+  item: SlideItem;
+  slides: SlideItem[];
+}
+
+const Slide: React.FC<SlideProps> = ({ item, slides }) => {
+  const getImageSource = () => {
+    if (item.image) {
+      return { uri: item.image };
+    } else if (item.imagePath) {
+      return { uri: item.imagePath };
+    }
+    // Fallback to default images based on index
+    const index = slides.findIndex(slide => slide.id === item.id);
+    const defaultImages = [slide1Image, slide2Image, slide3Image];
+    return defaultImages[index] || slide1Image;
+  };
+
+  return (
+    <View style={styles.slide}>
+      <View style={styles.imageContainer}>
+        <Image
+          source={getImageSource()}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </View>
+      
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{item.title || 'Walkthrough Screen'}</Text>
+        
+        <Text style={styles.mainDescription}>
+          {item.subtitle || 'Learn how to use this feature'}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const Footer: React.FC<FooterProps> = ({ slides, currentSlide, handleSkip, goToNextSlide }) => {
+  return (
+    <View style={styles.footer}>
+      {/* Pagination */}
+      <View style={styles.pagination}>
+        {slides.map((slide, index) => (
+          <View
+            key={`pagination-${slide.id}`}
+            style={[
+              styles.paginationDot,
+              currentSlide === index && styles.paginationDotActive,
+            ]}
+          />
+        ))}
+      </View>
+
+      {/* Bottom Section */}
+      <View style={styles.bottomSection}>
+        <SkipButton
+          title="SKIP"
+          onPress={handleSkip}
+        />
+        
+        <Button
+          title={currentSlide === slides.length - 1 ? 'GET STARTED' : 'NEXT'}
+          onPress={goToNextSlide}
+          variant="primary"
+        />
+      </View>
+    </View>
+  );
+};
 
 const WalkthroughScreen: React.FC<WalkthroughScreenProps> = ({ 
   onComplete, 
@@ -98,39 +177,7 @@ const WalkthroughScreen: React.FC<WalkthroughScreenProps> = ({
     },
   ];
 
-  const Slide: React.FC<{ item: SlideItem }> = ({ item }) => {
-    const getImageSource = () => {
-      if (item.image) {
-        return { uri: item.image };
-      } else if (item.imagePath) {
-        return { uri: item.imagePath };
-      }
-      // Fallback to default images based on index
-      const index = slides.findIndex(slide => slide.id === item.id);
-      const defaultImages = [slide1Image, slide2Image, slide3Image];
-      return defaultImages[index] || slide1Image;
-    };
 
-    return (
-      <View style={styles.slide}>
-        <View style={styles.imageContainer}>
-          <Image
-            source={getImageSource()}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        </View>
-        
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{item.title || 'Walkthrough Screen'}</Text>
-          
-          <Text style={styles.mainDescription}>
-            {item.subtitle || 'Learn how to use this feature'}
-          </Text>
-        </View>
-      </View>
-    );
-  };
 
   const goToNextSlide = (): void => {
     if (currentSlide < slides.length - 1) {
@@ -156,38 +203,7 @@ const WalkthroughScreen: React.FC<WalkthroughScreenProps> = ({
     itemVisiblePercentThreshold: 50,
   }).current;
 
-  const Footer: React.FC = () => {
-    return (
-      <View style={styles.footer}>
-        {/* Pagination */}
-        <View style={styles.pagination}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                currentSlide === index && styles.paginationDotActive,
-              ]}
-            />
-          ))}
-        </View>
 
-        {/* Bottom Section */}
-        <View style={styles.bottomSection}>
-          <SkipButton
-            title="SKIP"
-            onPress={handleSkip}
-          />
-          
-          <Button
-            title={currentSlide === slides.length - 1 ? 'GET STARTED' : 'NEXT'}
-            onPress={goToNextSlide}
-            variant="primary"
-          />
-        </View>
-      </View>
-    );
-  };
 
   return (
     <SafeAreaWrapper>
@@ -205,7 +221,7 @@ const WalkthroughScreen: React.FC<WalkthroughScreenProps> = ({
         <FlatList
           ref={flatListRef}
           data={slides}
-          renderItem={({ item }) => <Slide item={item} />}
+          renderItem={({ item }) => <Slide item={item} slides={slides} />}
           horizontal
           showsHorizontalScrollIndicator={false}
           pagingEnabled
@@ -221,7 +237,12 @@ const WalkthroughScreen: React.FC<WalkthroughScreenProps> = ({
         />
       )}
 
-      <Footer />
+      <Footer 
+        slides={slides}
+        currentSlide={currentSlide}
+        handleSkip={handleSkip}
+        goToNextSlide={goToNextSlide}
+      />
       </SafeAreaView>
     </SafeAreaWrapper>
   );

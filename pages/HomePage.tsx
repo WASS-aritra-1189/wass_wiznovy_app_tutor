@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
-  SafeAreaView,
   Image,
   ScrollView,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
@@ -30,17 +30,17 @@ const HomePage: React.FC<HomePageProps> = ({ userGender = 'Male', userName = 'Us
 
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [showAlert] = useState(false);
+  const [alertMessage] = useState('');
   const [appointmentDates, setAppointmentDates] = useState<number[]>([]);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   
   const bannerImages = [
-    require('../assets/tutormain.png'),
-    require('../assets/tutormain.png'),
-    require('../assets/tutormain.png'),
+    { id: 'banner-1', image: require('../assets/tutormain.png') },
+    { id: 'banner-2', image: require('../assets/tutormain.png') },
+    { id: 'banner-3', image: require('../assets/tutormain.png') },
   ];
   
   const { width } = Dimensions.get('window');
@@ -50,14 +50,14 @@ const HomePage: React.FC<HomePageProps> = ({ userGender = 'Male', userName = 'Us
     try {
       const response = await sessionsService.getTutorSessions(100, 0);
       
-      if (!response || !response.result || !Array.isArray(response.result)) {
+      if (!response?.result || !Array.isArray(response.result)) {
         setAppointmentDates([]);
         setTotalAppointments(0);
         return;
       }
       
       const filteredSessions = response.result.filter(session => {
-        if (!session.sessionDate) return false;
+        if (!session?.sessionDate) return false;
         const sessionDate = new Date(session.sessionDate);
         return sessionDate.getMonth() === month && sessionDate.getFullYear() === year;
       });
@@ -129,19 +129,19 @@ const HomePage: React.FC<HomePageProps> = ({ userGender = 'Male', userName = 'Us
               setCurrentIndex(newIndex);
             }}
           >
-            {bannerImages.map((image, index) => (
+            {bannerImages.map((item) => (
               <Image 
-                key={index}
-                source={image} 
+                key={item.id}
+                source={item.image} 
                 style={[styles.bannerImage, { width: imageWidth }]}
                 resizeMode="cover"
               />
             ))}
           </ScrollView>
           <View style={styles.pagination}>
-            {bannerImages.map((_, index) => (
+            {bannerImages.map((item, index) => (
               <View
-                key={index}
+                key={`dot-${item.id}`}
                 style={[
                   styles.paginationDot,
                   currentIndex === index && styles.paginationDotActive
