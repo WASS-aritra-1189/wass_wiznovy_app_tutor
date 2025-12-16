@@ -86,12 +86,14 @@ const SignUpScreen: React.FC = () => {
     }
     
     if (!password.trim()) {
+      // NOSONAR - validation message, not a credential
       newErrors.password = 'Password is required';
     } else if (!validatePassword(password)) {
       newErrors.password = 'Password must be 6-10 characters';
     }
     
     if (!confirmPassword.trim()) {
+      // NOSONAR - validation message, not a credential
       newErrors.confirmPassword = 'Confirm password is required';
     } else if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';

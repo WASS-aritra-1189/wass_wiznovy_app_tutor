@@ -22,7 +22,7 @@ import CourseDetailsPage from '../pages/CourseDetailsPage';
 import VideoDetailsPage from '../pages/VideoDetailsPage';
 import CourseVideoPage from '../pages/CourseVideoPage';
 import YoutubeTypePlayer from '../pages/YoutubeTypePlayer';
-import CategorySubjectsPage from '../pages/CategorySubjectsPage';
+
 import SubjectTeachersPage from '../pages/SubjectTeachersPage';
 import TutorDetailPage from '../pages/TutorDetailPage';
 import BookingsListPage from '../pages/BookingsListPage';
@@ -259,16 +259,7 @@ const MainTabNavigator = ({ onLogout }: { onLogout?: () => void }) => {
       <Stack.Screen name="VideoDetailsPage" component={VideoDetailsPage} />
       <Stack.Screen name="CourseVideoPage" component={CourseVideoPage} />
       <Stack.Screen name="YoutubeTypePlayer" component={YoutubeTypePlayer} />
-      <Stack.Screen name="CategorySubjects">
-        {(props: any) => (
-          <CategorySubjectsPage
-            {...props}
-            categoryMainImage={props.route?.params?.categoryMainImage || ''}
-            tutors={props.route?.params?.tutors || []}
-            onBack={() => props.navigation.goBack()}
-          />
-        )}
-      </Stack.Screen>
+
       <Stack.Screen name="SubjectTeachersPage">
         {(props: any) => (
           <SubjectTeachersPage

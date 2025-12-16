@@ -60,6 +60,7 @@ const SignInScreen: React.FC = () => {
     }
     
     if (!password.trim()) {
+      // NOSONAR - validation message, not a credential
       newErrors.password = 'Password is required';
     } else if (!validatePassword(password)) {
       newErrors.password = 'Password must be at least 6 characters';
@@ -96,13 +97,6 @@ const SignInScreen: React.FC = () => {
   };
 
   const handleSignIn = async () => {
-    if (email.trim() === 'aritraharmacgec@gmail.com' && password.trim() === '123456') {
-      console.log('Using real API for test credentials');
-      setErrors({});
-      await performLogin('aritrasharmacgec@gmail.com', '123456');
-      return;
-    }
-    
     const newErrors = validateSignInForm();
     setErrors(newErrors);
     
@@ -173,7 +167,7 @@ const SignInScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={(text) => {
-                  const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
+                  const filteredText = text.replace(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
                   if (errors.email) {
                     setErrors(prev => ({...prev, email: undefined}));
