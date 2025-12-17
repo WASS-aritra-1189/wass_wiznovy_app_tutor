@@ -167,7 +167,7 @@ const SignInScreen: React.FC = () => {
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={(text) => {
-                  const filteredText = text.replace(/[^a-zA-Z0-9@.]/g, '');
+                  const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
                   if (errors.email) {
                     setErrors(prev => ({...prev, email: undefined}));

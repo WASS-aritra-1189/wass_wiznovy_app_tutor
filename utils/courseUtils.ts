@@ -12,34 +12,36 @@ export const validateCourseForm = (
   return null;
 };
 
-export const formatCourseData = (
-  courseName: string,
-  description: string,
-  price: string,
-  discountedPrice: string,
-  validityDays: string,
-  accessType: 'PAID' | 'FREE',
-  duration: string,
-  totalLectures: string,
-  authorMessage: string,
-  startDate: string,
-  endDate: string,
-  subjectId?: string,
-  languageId?: string
-) => ({
-  name: courseName,
-  description,
-  price: price,
-  discountPrice: discountedPrice || undefined,
-  validityDays: Number.parseInt(validityDays, 10) || 365,
-  accessType,
-  totalDuration: `${duration} hours`,
-  totalLectures: Number.parseInt(totalLectures, 10) || 1,
-  authorMessage: authorMessage || 'Welcome to this course',
-  startDate: new Date(startDate).toISOString().split('T')[0],
-  endDate: new Date(endDate).toISOString().split('T')[0],
-  subjectId: subjectId || undefined,
-  languageId: languageId || undefined,
+interface CourseFormData {
+  courseName: string;
+  description: string;
+  price: string;
+  discountedPrice: string;
+  validityDays: string;
+  accessType: 'PAID' | 'FREE';
+  duration: string;
+  totalLectures: string;
+  authorMessage: string;
+  startDate: string;
+  endDate: string;
+  subjectId?: string;
+  languageId?: string;
+}
+
+export const formatCourseData = (data: CourseFormData) => ({
+  name: data.courseName,
+  description: data.description,
+  price: data.price,
+  discountPrice: data.discountedPrice || undefined,
+  validityDays: Number.parseInt(data.validityDays, 10) || 365,
+  accessType: data.accessType,
+  totalDuration: `${data.duration} hours`,
+  totalLectures: Number.parseInt(data.totalLectures, 10) || 1,
+  authorMessage: data.authorMessage || 'Welcome to this course',
+  startDate: new Date(data.startDate).toISOString().split('T')[0],
+  endDate: new Date(data.endDate).toISOString().split('T')[0],
+  subjectId: data.subjectId || undefined,
+  languageId: data.languageId || undefined,
 });
 
 export const handleDateChange = (

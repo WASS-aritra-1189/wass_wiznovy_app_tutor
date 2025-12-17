@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AppDispatch} from '../store/store';
 import { clearUser, fetchUserProfile } from '../store/userSlice';
-import { getToken, removeToken, clearAllData } from '../services/storage';
+import { getToken, removeToken} from '../services/storage';
 import { logoutUser } from '../services/authService';
 
 // Auth screens

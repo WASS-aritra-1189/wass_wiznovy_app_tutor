@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import {Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
 interface TutorCardProps {
-  image: string | any;
+  image: string;
   title: string;
   expertCount: string;
   onPress?: () => void;

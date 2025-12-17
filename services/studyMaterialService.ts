@@ -188,6 +188,7 @@ export const studyMaterialService = {
         };
       }
     } catch (error) {
+      console.error('studyMaterialService: getStudyMaterialById error:', error);
       return {
         success: false,
         message: 'Network error. Please check your connection and try again.',
@@ -245,6 +246,7 @@ export const studyMaterialService = {
         };
       }
     } catch (error) {
+      console.error('studyMaterialService: updateStudyMaterial error:', error);
       return {
         success: false,
         message: 'Network error. Please check your connection and try again.',
@@ -290,6 +292,7 @@ export const studyMaterialService = {
         };
       }
     } catch (error) {
+      console.error('studyMaterialService: updateStudyMaterialFile error:', error);
       return {
         success: false,
         message: 'Network error. Please check your connection and try again.',
