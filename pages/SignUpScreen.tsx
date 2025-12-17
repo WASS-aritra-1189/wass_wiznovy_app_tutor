@@ -24,26 +24,7 @@ import ErrorPopup from '../components/ErrorPopup';
 
 import { registerUser } from '../services/authService';
 import { storeToken } from '../services/storage';
-
-const validateName = (name: string) => {
-  const nameRegex = /^[a-zA-Z\s]+$/;
-  return nameRegex.test(name);
-};
-
-const validateEmail = (email: string) => {
-  const emailRegex = /^[a-zA-Z0-9@.]+$/;
-  const validEmailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && validEmailFormat.test(email);
-};
-
-const validatePassword = (password: string) => {
-  return password.length >= 6 && password.length <= 10;
-};
-
-const validatePhone = (phone: string) => {
-  const phoneRegex = /^\d{10,}$/;
-  return phoneRegex.test(phone.replaceAll(/\D/g, ''));
-};
+import { validateSignUpForm, clearFieldError } from '../utils/authUtils';
 
 const SignUpScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -64,50 +45,10 @@ const SignUpScreen: React.FC = () => {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const validateForm = () => {
-    const newErrors: {name?: string; phone?: string; email?: string; password?: string; confirmPassword?: string; terms?: string} = {};
-    
-    if (!name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (!validateName(name)) {
-      newErrors.name = 'Name cannot contain special characters';
-    }
-    
-    if (!phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!validatePhone(phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
-    }
-    
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    
-    if (!password.trim()) {
-      // NOSONAR - validation message, not a credential
-      newErrors.password = 'Password is required';
-    } else if (!validatePassword(password)) {
-      newErrors.password = 'Password must be 6-10 characters';
-    }
-    
-    if (!confirmPassword.trim()) {
-      // NOSONAR - validation message, not a credential
-      newErrors.confirmPassword = 'Confirm password is required';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    if (!acceptTerms) {
-      newErrors.terms = 'Please accept terms and conditions';
-    }
-    
-    return newErrors;
-  };
+
 
   const handleSignUp = async () => {
-    const newErrors = validateForm();
+    const newErrors = validateSignUpForm(name, phone, email, password, confirmPassword, acceptTerms);
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
@@ -160,9 +101,7 @@ const SignUpScreen: React.FC = () => {
   const handleTermsAccept = () => {
     setAcceptTerms(true);
     setShowTermsPopup(false);
-    if (errors.terms) {
-      setErrors(prev => ({...prev, terms: undefined}));
-    }
+    clearFieldError(errors, 'terms', setErrors);
   };
 
   return (
@@ -213,9 +152,7 @@ const SignUpScreen: React.FC = () => {
                 onChangeText={(text) => {
                   const filteredText = text.replaceAll(/[^a-zA-Z\s]/g, '');
                   setName(filteredText);
-                  if (errors.name) {
-                    setErrors(prev => ({...prev, name: undefined}));
-                  }
+                  clearFieldError(errors, 'name', setErrors);
                 }}
               />
             </View>
@@ -236,9 +173,7 @@ const SignUpScreen: React.FC = () => {
                   const numericText = text.replaceAll(/\D/g, '');
                   if (numericText.length <= 10) {
                     setPhone(numericText);
-                    if (errors.phone) {
-                      setErrors(prev => ({...prev, phone: undefined}));
-                    }
+                    clearFieldError(errors, 'phone', setErrors);
                   }
                 }}
                 keyboardType="phone-pad"
@@ -261,9 +196,7 @@ const SignUpScreen: React.FC = () => {
                 onChangeText={(text) => {
                   const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
-                  if (errors.email) {
-                    setErrors(prev => ({...prev, email: undefined}));
-                  }
+                  clearFieldError(errors, 'email', setErrors);
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -285,11 +218,9 @@ const SignUpScreen: React.FC = () => {
                 onChangeText={(text) => {
                   if (text.length <= 10) {
                     setPassword(text);
-                    if (errors.password) {
-                      setErrors(prev => ({...prev, password: undefined}));
-                    }
+                    clearFieldError(errors, 'password', setErrors);
                     if (errors.confirmPassword && confirmPassword && text === confirmPassword) {
-                      setErrors(prev => ({...prev, confirmPassword: undefined}));
+                      clearFieldError(errors, 'confirmPassword', setErrors);
                     }
                   }
                 }}
@@ -322,9 +253,7 @@ const SignUpScreen: React.FC = () => {
                 onChangeText={(text) => {
                   if (text.length <= 10) {
                     setConfirmPassword(text);
-                    if (errors.confirmPassword) {
-                      setErrors(prev => ({...prev, confirmPassword: undefined}));
-                    }
+                    clearFieldError(errors, 'confirmPassword', setErrors);
                   }
                 }}
                 maxLength={10}
