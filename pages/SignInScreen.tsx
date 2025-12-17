@@ -20,18 +20,9 @@ import SafeAreaWrapper from '../components/SafeAreaWrapper';
 import SuccessPopup from '../components/SuccessPopup';
 import ErrorPopup from '../components/ErrorPopup';
 import { useNavigationContext } from '../navigation/NavigationContext';
-import { VALIDATION_MESSAGES } from '../constants/validationMessages';
 import { loginUser } from '../services/authService';
 import { storeToken } from '../services/storage';
-
-const validateEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const validatePassword = (password: string) => {
-  return password.length >= 6;
-};
+import { validateSignInForm, clearFieldError } from '../utils/authUtils';
 
 const SignInScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -50,28 +41,7 @@ const SignInScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
 
-  const validateSignInForm = () => {
-    const newErrors: {email?: string; password?: string; terms?: string} = {};
-    
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    
-    if (!password.trim()) {
-      // NOSONAR - validation message, not a credential
-      newErrors.password =VALIDATION_MESSAGES.PASSWORD_REQUIRED;
-    } else if (!validatePassword(password)) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (!acceptTerms) {
-      newErrors.terms = 'Please accept terms and conditions';
-    }
-    
-    return newErrors;
-  };
+
 
   const performLogin = async (loginEmail: string, loginPassword: string) => {
     setLoading(true);
@@ -97,7 +67,7 @@ const SignInScreen: React.FC = () => {
   };
 
   const handleSignIn = async () => {
-    const newErrors = validateSignInForm();
+    const newErrors = validateSignInForm(email, password, acceptTerms);
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
@@ -126,9 +96,7 @@ const SignInScreen: React.FC = () => {
   const handleTermsAccept = () => {
     setAcceptTerms(true);
     setShowTermsPopup(false);
-    if (errors.terms) {
-      setErrors(prev => ({...prev, terms: undefined}));
-    }
+    clearFieldError(errors, 'terms', setErrors);
   };
 
   return (
@@ -169,9 +137,7 @@ const SignInScreen: React.FC = () => {
                 onChangeText={(text) => {
                   const filteredText = text.replaceAll(/[^a-zA-Z0-9@.]/g, '');
                   setEmail(filteredText);
-                  if (errors.email) {
-                    setErrors(prev => ({...prev, email: undefined}));
-                  }
+                  clearFieldError(errors, 'email', setErrors);
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -192,9 +158,7 @@ const SignInScreen: React.FC = () => {
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  if (errors.password) {
-                    setErrors(prev => ({...prev, password: undefined}));
-                  }
+                  clearFieldError(errors, 'password', setErrors);
                 }}
                 secureTextEntry={false}
                 textContentType="none"
@@ -221,9 +185,7 @@ const SignInScreen: React.FC = () => {
             <TouchableOpacity 
               onPress={() => {
                 setAcceptTerms(!acceptTerms);
-                if (errors.terms) {
-                  setErrors(prev => ({...prev, terms: undefined}));
-                }
+                clearFieldError(errors, 'terms', setErrors);
               }}
             >
               <View style={[styles.checkbox, acceptTerms && styles.checkboxChecked]}>
