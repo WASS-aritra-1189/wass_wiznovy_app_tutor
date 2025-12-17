@@ -75,22 +75,21 @@ const SignInScreen: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    setShowGoogleTermsPopup(true);
+  const handleSocialLogin = (provider: 'google' | 'apple') => {
+    if (provider === 'google') {
+      setShowGoogleTermsPopup(true);
+    } else {
+      setShowAppleTermsPopup(true);
+    }
   };
 
-  const handleGoogleTermsContinue = () => {
-    setShowGoogleTermsPopup(false);
-    console.log('Google sign in accepted');
-  };
-
-  const handleAppleSignIn = () => {
-    setShowAppleTermsPopup(true);
-  };
-
-  const handleAppleTermsContinue = () => {
-    setShowAppleTermsPopup(false);
-    console.log('Apple sign in accepted');
+  const handleSocialTermsContinue = (provider: 'google' | 'apple') => {
+    if (provider === 'google') {
+      setShowGoogleTermsPopup(false);
+    } else {
+      setShowAppleTermsPopup(false);
+    }
+    console.log(`${provider} sign in accepted`);
   };
 
   const handleTermsAccept = () => {
@@ -217,7 +216,7 @@ const SignInScreen: React.FC = () => {
           <Text style={styles.socialTitle}>Login with social media</Text>
           
           <View style={styles.socialButtons}>
-            <TouchableOpacity onPress={handleGoogleSignIn} style={styles.socialButton}>
+            <TouchableOpacity onPress={() => handleSocialLogin('google')} style={styles.socialButton}>
               <Image 
                 source={require('../assets/google.png')} 
                 style={styles.socialIcon}
@@ -226,7 +225,7 @@ const SignInScreen: React.FC = () => {
               <Text style={styles.socialButtonText}>Google</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity onPress={handleAppleSignIn} style={styles.socialButton}>
+            <TouchableOpacity onPress={() => handleSocialLogin('apple')} style={styles.socialButton}>
               <Image 
                 source={require('../assets/apple.png')} 
                 style={styles.socialIcon}
@@ -248,12 +247,12 @@ const SignInScreen: React.FC = () => {
 
       <GoogleLoginTermsPopup
         visible={showGoogleTermsPopup}
-        onContinue={handleGoogleTermsContinue}
+        onContinue={() => handleSocialTermsContinue('google')}
       />
       
       <GoogleLoginTermsPopup
         visible={showAppleTermsPopup}
-        onContinue={handleAppleTermsContinue}
+        onContinue={() => handleSocialTermsContinue('apple')}
         provider="apple"
       />
       
@@ -325,11 +324,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginBottom: 4,
   },
-  // appSubtitle: {
-  //   fontSize: 16,
-  //   color: '#000',
-  //   textAlign: 'left',
-  // },
+
   formSection: {
     paddingHorizontal: 20,
     marginBottom: 30,
@@ -343,15 +338,7 @@ const styles = StyleSheet.create({
     color: '#01004C',
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
