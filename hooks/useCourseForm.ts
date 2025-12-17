@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { validateCourseForm, formatCourseData, handleDateChange } from '../utils/courseUtils';
 
 export const useCourseForm = () => {
   const [courseName, setCourseName] = useState('');
@@ -24,43 +25,22 @@ export const useCourseForm = () => {
 
   const handleThumbnailUpload = () => {};
 
-  const onStartDateChange = (_: any, selectedDate?: Date) => {
-    setShowStartDatePicker(false);
-    if (selectedDate && !Number.isNaN(selectedDate.getTime())) {
-      setStartDate(selectedDate.toISOString().split('T')[0]);
-    }
-  };
-
-  const onEndDateChange = (_: any, selectedDate?: Date) => {
-    setShowEndDatePicker(false);
-    if (selectedDate && !Number.isNaN(selectedDate.getTime())) {
-      setEndDate(selectedDate.toISOString().split('T')[0]);
-    }
-  };
+  const onStartDateChange = handleDateChange(setShowStartDatePicker, setStartDate);
+  const onEndDateChange = handleDateChange(setShowEndDatePicker, setEndDate);
 
   const validateForm = () => {
-    if (!courseName || !description || !price || !duration || !startDate || !endDate) {
-      setErrorMessage('Please fill in all required fields');
-      setShowErrorPopup(true);
-      setTimeout(() => setShowErrorPopup(false), 3000);
+    const error = validateCourseForm(courseName, description, price, duration, startDate, endDate);
+    if (error) {
+      showError(error);
       return false;
     }
     return true;
   };
 
-  const prepareCourseData = () => ({
-    name: courseName,
-    description,
-    price,
-    discountPrice: discountedPrice || undefined,
-    validityDays: validityDays && !Number.isNaN(Number.parseInt(validityDays)) ? Number.parseInt(validityDays) : 365,
-    accessType,
-    totalDuration: `${duration} hours`,
-    totalLectures: totalLectures && !Number.isNaN(Number.parseInt(totalLectures)) ? Number.parseInt(totalLectures) : 1,
-    authorMessage: authorMessage || 'Welcome to this course',
-    startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
-    endDate: endDate ? new Date(endDate).toISOString() : new Date().toISOString(),
-  });
+  const prepareCourseData = () => formatCourseData(
+    courseName, description, price, discountedPrice, validityDays,
+    accessType, duration, totalLectures, authorMessage, startDate, endDate
+  );
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -74,9 +54,17 @@ export const useCourseForm = () => {
   };
 
   const resetForm = () => {
-    setCourseName(''); setDuration(''); setStartDate(''); setEndDate('');
-    setPrice(''); setDiscountedPrice(''); setDescription('');
-    setTotalLectures(''); setValidityDays(''); setAuthorMessage(''); setAccessType('PAID');
+    setCourseName('');
+    setDuration('');
+    setStartDate('');
+    setEndDate('');
+    setPrice('');
+    setDiscountedPrice('');
+    setDescription('');
+    setTotalLectures('');
+    setValidityDays('');
+    setAuthorMessage('');
+    setAccessType('PAID');
   };
 
   return {
