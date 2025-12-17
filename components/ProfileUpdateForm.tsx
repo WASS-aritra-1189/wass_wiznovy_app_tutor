@@ -763,7 +763,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ onUpdate, onBackT
                     style={styles.removeButton}
                     onPress={() => removeTimeSlot(day, slotIndex)}
                   >
-                    <Text style={styles.removeButtonText}>×</Text>
+                    <Text style={styles.removeButtonText}>x</Text>
                   </TouchableOpacity>
                 </View>
               ))}
